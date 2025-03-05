@@ -15,27 +15,28 @@ if sys.platform.startswith("linux"):
 
     def read_max31855():
         """
-        Reads temperature from MAX31855 using SPI.
+        Reads temperature from the MAX31855 sensor using spidev.
 
         Returns:
-            float: Temperature in °F
+            float: Temperature in °F.
         """
         spi = spidev.SpiDev()
         spi.open(SPI_BUS, SPI_DEVICE)
         spi.max_speed_hz = 5000000  # Set SPI clock speed
 
-        raw = spi.readbytes(4)  # Read 4 bytes from the sensor
+        # Read 4 bytes from the sensor
+        raw = spi.readbytes(4)
         spi.close()
 
-        # Combine the bytes into a single 32-bit integer
+        # Combine the 4 bytes into a single 32-bit integer
         raw_data = (raw[0] << 24) | (raw[1] << 16) | (raw[2] << 8) | raw[3]
-        # The temperature data is in the top bits, shift right by 18
+        # The temperature data is in the top 14 bits (after shifting right by 18)
         temp_raw = raw_data >> 18
         # Check for negative temperature (if sign bit is set)
         if temp_raw & 0x2000:
             temp_raw -= 16384
 
-        # Convert raw temperature to Celsius (each bit represents 0.25°C)
+        # Convert raw data to Celsius (each bit is 0.25°C)
         temp_c = temp_raw * 0.25
         # Convert Celsius to Fahrenheit
         temp_f = temp_c * 9.0 / 5.0 + 32.0
@@ -54,7 +55,7 @@ if sys.platform.startswith("linux"):
             return None
 
 else:
-    # If not on Linux, use a mock sensor (for Windows development)
+    # For non-Linux systems (e.g., Windows development), use a mock sensor.
     class MockMAX31855:
         def read_temp_f(self):
             return 77.0  # Dummy temperature for testing
