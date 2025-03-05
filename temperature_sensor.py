@@ -1,42 +1,83 @@
+#!/usr/bin/env python3
+import sys
 import time
-import Adafruit_GPIO.SPI as SPI
-import Adafruit_MAX31855.MAX31855 as MAX31855
 
-# Define your GPIO pins (adjust according to your wiring)
-CLK_PIN = 11  # SCLK (clock pin)
-CS_PIN = 8  # CS (chip select)
-DO_PIN = 9  # MISO (data in)
-
-# Initialize the MAX31855 sensor
-sensor = MAX31855.MAX31855(CLK_PIN, CS_PIN, DO_PIN)
-
-# Optional calibration offset (in Celsius)
+# Calibration offset in °F (adjust as needed)
 CALIBRATION_OFFSET = 0.0
 
+if sys.platform.startswith("linux"):
+    import spidev  # Raspberry Pi SPI library
 
-def read_temperature():
-    """
-    Reads the temperature from the MAX31855 sensor and applies calibration.
+    # SPI Configuration for MAX31855
+    SPI_BUS = 0
+    SPI_DEVICE = 0
 
-    Returns:
-        float: Temperature in Celsius, or None if an error occurs.
-    """
+
+    def read_max31855():
+        """
+        Reads temperature from MAX31855 using SPI.
+
+        Returns:
+            float: Temperature in °F
+        """
+        spi = spidev.SpiDev()
+        spi.open(SPI_BUS, SPI_DEVICE)
+        spi.max_speed_hz = 5000000  # Set SPI clock speed
+
+        raw = spi.readbytes(4)  # Read 4 bytes from the sensor
+        spi.close()
+
+        # Combine the bytes into a single 32-bit integer
+        raw_data = (raw[0] << 24) | (raw[1] << 16) | (raw[2] << 8) | raw[3]
+        # The temperature data is in the top bits, shift right by 18
+        temp_raw = raw_data >> 18
+        # Check for negative temperature (if sign bit is set)
+        if temp_raw & 0x2000:
+            temp_raw -= 16384
+
+        # Convert raw temperature to Celsius (each bit represents 0.25°C)
+        temp_c = temp_raw * 0.25
+        # Convert Celsius to Fahrenheit
+        temp_f = temp_c * 9.0 / 5.0 + 32.0
+        return temp_f
+
+
+    def read_temperature():
+        """
+        Returns the calibrated temperature reading in °F.
+        """
+        try:
+            temp_f = read_max31855()
+            return temp_f + CALIBRATION_OFFSET
+        except Exception as e:
+            print("Error reading temperature:", e)
+            return None
+
+else:
+    # If not on Linux, use a mock sensor (for Windows development)
+    class MockMAX31855:
+        def read_temp_f(self):
+            return 77.0  # Dummy temperature for testing
+
+
+    mock_sensor = MockMAX31855()
+
+
+    def read_temperature():
+        """
+        Returns a mocked temperature reading in °F.
+        """
+        return mock_sensor.read_temp_f() + CALIBRATION_OFFSET
+
+if __name__ == '__main__':
+    print("Starting temperature sensor read loop. Press Ctrl+C to exit.")
     try:
-        # Read raw temperature in Celsius
-        temp_c = sensor.readTempC()
-        # Apply any calibration offset
-        return temp_c + CALIBRATION_OFFSET
-    except Exception as e:
-        print("Error reading temperature:", e)
-        return None
-
-
-if __name__ == "__main__":
-    # Test loop to print temperature every second
-    while True:
-        temperature = read_temperature()
-        if temperature is not None:
-            print("Current Temperature: {:.2f} °C".format(temperature))
-        else:
-            print("Failed to read temperature")
-        time.sleep(1)
+        while True:
+            temperature = read_temperature()
+            if temperature is not None:
+                print("Current Temperature: {:.2f} °F".format(temperature))
+            else:
+                print("Temperature reading failed.")
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\nExiting temperature sensor read loop.")
