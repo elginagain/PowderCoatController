@@ -1,0 +1,13 @@
+{
+    "temp_offset": 0.0,
+    "pid_tunings": [
+        10,
+        5,
+        1
+    ],
+    "target_temperature": 350,
+    "oven_on": false,
+    "light_on": false,
+    "timer_running": false,
+    "time_remaining": 0
+}

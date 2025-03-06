@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oven Temperature Graph</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #222; color: #fff; }
+        .container { width: 90%; margin: auto; padding: 20px; position: relative; }
+        .button { font-size: 24px; padding: 15px; margin: 10px; background: #444; color: white; border: none; border-radius: 10px; cursor: pointer; width: 100%; }
+        .button:hover { background: #666; }
+        canvas { max-width: 100%; height: auto; }
+        .zoom-toggle { margin-top: 10px; }
+        .run-list { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Oven Temperature Over Time</h1>
+
+        <button class="button zoom-toggle" id="toggleZoom">Toggle Zoom/Pan</button>
+        <button class="button" id="exportData">Export Data</button>
+
+        <canvas id="temperatureGraph"></canvas>
+
+        <div class="run-list">
+            <h2>Previous Runs</h2>
+            <ul id="runHistory"></ul>
+        </div>
+
+        <button class="button" onclick="location.href='/'">Back to Dashboard</button>
+    </div>
+
+    <script>
+        let tempChart;
+        const maxDataPoints = 720; // 1 hour of data at 5-second intervals
+        let zoomEnabled = true;
+
+        function fetchTemperatureData() {
+            $.get("/temperature_data", function(data) {
+                let time = new Date().toLocaleTimeString();
+                tempChart.data.labels.push(time);
+                tempChart.data.datasets[0].data.push(data.temperature);
+                tempChart.data.datasets[1].data.push(data.target_temperature);
+                if (tempChart.data.labels.length > maxDataPoints) {
+                    tempChart.data.labels.shift();
+                    tempChart.data.datasets[0].data.shift();
+                    tempChart.data.datasets[1].data.shift();
+                }
+                tempChart.update();
+            });
+        }
+
+        function startTemperatureGraph() {
+            let ctx = document.getElementById('temperatureGraph').getContext('2d');
+            tempChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'Actual Temperature', borderColor: 'red', data: [], fill: false },
+                        { label: 'Target Temperature', borderColor: 'yellow', data: [], fill: false }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        zoom: {
+                            pan: { enabled: zoomEnabled, mode: 'x' },
+                            zoom: { enabled: zoomEnabled, mode: 'x' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function toggleZoom() {
+            zoomEnabled = !zoomEnabled;
+            tempChart.options.plugins.zoom.pan.enabled = zoomEnabled;
+            tempChart.options.plugins.zoom.zoom.enabled = zoomEnabled;
+            tempChart.update();
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tempChart.data));
+            const downloadAnchor = document.createElement("a");
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "temperature_data.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            document.body.removeChild(downloadAnchor);
+        }
+
+        function fetchRunHistory() {
+            $.get("/run_history", function(data) {
+                let runList = document.getElementById("runHistory");
+                runList.innerHTML = "";
+                data.runs.forEach(run => {
+                    let listItem = document.createElement("li");
+                    listItem.innerHTML = `<button class='button' onclick='loadRunData("${run}")'>${run}</button>`;
+                    runList.appendChild(listItem);
+                });
+            });
+        }
+
+        function loadRunData(runName) {
+            $.get(`/load_run_data?run=${runName}`, function(data) {
+                tempChart.data.labels = data.labels;
+                tempChart.data.datasets[0].data = data.temperatures;
+                tempChart.data.datasets[1].data = data.target_temperatures;
+                tempChart.update();
+            });
+        }
+
+        $(document).ready(function() {
+            startTemperatureGraph();
+            setInterval(fetchTemperatureData, 5000);
+            fetchRunHistory();
+            $("#toggleZoom").click(toggleZoom);
+            $("#exportData").click(exportData);
+        });
+    </script>
+</body>
+</html>

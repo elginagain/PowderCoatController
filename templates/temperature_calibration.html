@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature Calibration</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #222; color: #fff; }
+        .container { width: 90%; margin: auto; padding: 20px; }
+        .button { font-size: 24px; padding: 15px; margin: 10px; background: #444; color: white; border: none; border-radius: 10px; cursor: pointer; width: 100%; }
+        .button:hover { background: #666; }
+        .status { margin: 10px; font-size: 24px; }
+        canvas { max-width: 100%; height: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Temperature Calibration</h1>
+        <p class="status" id="calibrationStatus">Status: Idle</p>
+
+        <button class="button" id="startCalibration">Start Calibration</button>
+        <button class="button" id="showInstructions">Instructions</button>
+        <button class="button" onclick="location.href='/settings'">Back to Settings</button>
+
+        <canvas id="calibrationGraph"></canvas>
+    </div>
+
+    <script>
+        let calibrationChart;
+
+        function startCalibrationGraph() {
+            let ctx = document.getElementById('calibrationGraph').getContext('2d');
+            calibrationChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{ label: 'Calibration Temperature', borderColor: 'blue', data: [] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        $("#startCalibration").click(function() {
+            $("#calibrationStatus").text("Status: Calibration in Progress...");
+            startCalibrationGraph();
+            $.post("/calibrate_probe", function(response) {
+                $("#calibrationStatus").text("Status: Calibration Complete");
+            });
+        });
+
+        $("#showInstructions").click(function() {
+            alert("Temperature Calibration Instructions:\n\n" +
+                  "1. Ensure the probe is in ice water (32°F) and press 'Start Calibration'.\n" +
+                  "2. Wait for the temperature to stabilize, then follow the prompts to move the probe to boiling water (212°F).\n" +
+                  "3. The system will calculate an offset and apply the correction to future temperature readings.\n\n" +
+                  "Once completed, the system will save the calibration settings automatically.");
+        });
+
+        $(document).ready(function() {
+            startCalibrationGraph();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #222; color: #fff; }
+        .container { width: 90%; margin: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .button { font-size: 24px; padding: 15px; margin: 10px; background: #444; color: white; border: none; border-radius: 10px; cursor: pointer; width: 100%; }
+        .button:hover { background: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Settings</h1>
+        <button class="button" onclick="location.href='/pid_autotune'">PID Auto-Tune</button>
+        <button class="button" onclick="location.href='/temperature_calibration'">Temperature Calibration</button>
+        <button class="button" onclick="shutdownSystem()">Shutdown System</button>
+        <button class="button" onclick="location.href='/'">Back to Dashboard</button>
+    </div>
+
+    <script>
+        function shutdownSystem() {
+            if (confirm("Are you sure you want to shut down the system?")) {
+                fetch('/shutdown', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => alert(data.message));
+            }
+        }
+    </script>
+</body>
+</html>

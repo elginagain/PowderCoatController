@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PID Auto-Tune</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #222; color: #fff; }
+        .container { width: 90%; margin: auto; padding: 20px; }
+        .button { font-size: 24px; padding: 15px; margin: 10px; background: #444; color: white; border: none; border-radius: 10px; cursor: pointer; width: 100%; }
+        .button:hover { background: #666; }
+        .keypad { display: none; position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); background: #444; padding: 10px; border-radius: 10px; }
+        .keypad button { font-size: 24px; padding: 15px; margin: 5px; }
+        canvas { max-width: 100%; height: auto; }
+        .input-field { font-size: 24px; padding: 10px; margin: 10px; width: 150px; text-align: center; background: #333; border: 2px solid white; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PID Auto-Tune</h1>
+
+        <h2>Settings</h2>
+        <p><strong>Time to 350°F:</strong> <span id="heatTime" class="input-field">14</span> min</p>
+        <p><small>Estimated time for the oven to reach 350°F. This is used to adjust auto-tune duration.</small></p>
+
+        <p><strong>Relay Period:</strong> <span id="relayPeriod" class="input-field">10</span> sec</p>
+        <p><small>Defines how long the heater cycles ON/OFF per tuning step. A lower value provides more frequent adjustments, while a higher value smooths transitions.</small></p>
+
+        <p><strong>Number of Cycles:</strong> <span id="numCycles" class="input-field">6</span></p>
+        <p><small>Determines how many ON/OFF oscillation cycles the auto-tune process performs. More cycles improve tuning accuracy but take longer.</small></p>
+
+        <button class="button" id="startAutoTune">Start Auto-Tune</button>
+        <button class="button" id="showInstructions">Instructions</button>
+        <button class="button" onclick="location.href='/settings'">Back to Settings</button>
+
+        <p class="status" id="autoTuneStatus">Status: Idle</p>
+        <canvas id="autoTuneGraph"></canvas>
+    </div>
+
+    <div class="keypad" id="keypad">
+        <div>
+            <button class="key">1</button><button class="key">2</button><button class="key">3</button>
+        </div>
+        <div>
+            <button class="key">4</button><button class="key">5</button><button class="key">6</button>
+        </div>
+        <div>
+            <button class="key">7</button><button class="key">8</button><button class="key">9</button>
+        </div>
+        <div>
+            <button class="key">0</button><button class="key clear">C</button><button class="key enter">✔</button>
+        </div>
+    </div>
+
+    <script>
+        let autoTuneChart, activeField;
+
+        function showKeypad(target) {
+            activeField = target;
+            $("#keypad").fadeIn();
+        }
+
+        function updateField(value) {
+            let currentValue = activeField.text();
+            if (value === "C") {
+                activeField.text("");
+            } else if (value === "✔") {
+                $("#keypad").fadeOut();
+            } else {
+                activeField.text(currentValue + value);
+            }
+        }
+
+        function startAutoTuneGraph() {
+            let ctx = document.getElementById('autoTuneGraph').getContext('2d');
+            autoTuneChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{ label: 'Temperature', borderColor: 'red', data: [] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        $(".input-field").click(function() { showKeypad($(this)); });
+        $(".key").click(function() { updateField($(this).text()); });
+
+        $("#startAutoTune").click(function() {
+            $("#autoTuneStatus").text("Status: Auto-Tuning in Progress...");
+            startAutoTuneGraph();
+            $.post("/auto_tune", {
+                heat_time: parseInt($("#heatTime").text()),
+                relay_period: parseInt($("#relayPeriod").text()),
+                num_cycles: parseInt($("#numCycles").text())
+            }, function(response) {
+                $("#autoTuneStatus").text("Status: Auto-Tuning Complete");
+            });
+        });
+
+        $("#showInstructions").click(function() {
+            alert("PID Auto-Tune Instructions:\n\n" +
+                  "1. **Time to 350°F** - Enter the estimated time it takes for the oven to reach 350°F.\n" +
+                  "2. **Relay Period** - The duration in seconds that the heating element cycles ON/OFF. Shorter times create more precise tuning but may introduce instability.\n" +
+                  "3. **Number of Cycles** - The number of ON/OFF cycles performed during tuning. More cycles improve accuracy but increase duration.\n\n" +
+                  "Once the parameters are set, click 'Start Auto-Tune' and wait for the process to complete. The graph will show temperature variations during tuning.");
+        });
+    </script>
+</body>
+</html>
