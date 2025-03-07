@@ -10,12 +10,31 @@
       color: #fff;
       text-align: center;
       font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    .button {
+      font-size: 24px;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      background: #333;
+      border: 2px solid #fff;
+      color: #fff;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+    .button:hover {
+      background: #444;
     }
   </style>
 </head>
 <body>
   <h1>Current Temperature (Last 2 Hours)</h1>
   <canvas id="tempChart" width="800" height="400"></canvas>
+  <br>
+  <a href="/" class="button">Back to Dashboard</a>
+  <a href="/cycles" class="button">View Historical Cycles</a>
   <script>
     const ctx = document.getElementById('tempChart').getContext('2d');
     const tempChart = new Chart(ctx, {
@@ -73,7 +92,7 @@
         .catch(error => console.error('Error:', error));
     }
 
-    // Update every 5 seconds.
+    // Update the graph every 5 seconds.
     setInterval(fetchCurrentHistory, 5000);
     fetchCurrentHistory();
   </script>

@@ -4,15 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Putting everything up to github to test on the pi.">
-      <change afterPath="$PROJECT_DIR$/db.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/schema.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/current_temp_history.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/cycle_graph.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/cycles.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/dashboard.html" afterDir="false" />
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Added temperature graphing and database to store 20 historical graphs.">
+      <change beforePath="$PROJECT_DIR$/templates/current_temp_history.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/current_temp_history.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -135,12 +128,21 @@
       <option name="project" value="LOCAL" />
       <updated>1741223483941</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Added temperature graphing and database to store 20 historical graphs.">
+      <option name="closed" value="true" />
+      <created>1741390557591</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1741390557591</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Just testing temperature_sensor.py" />
     <MESSAGE value="Putting everything up to github to test on the pi." />
-    <option name="LAST_COMMIT_MESSAGE" value="Putting everything up to github to test on the pi." />
+    <MESSAGE value="Added temperature graphing and database to store 20 historical graphs." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added temperature graphing and database to store 20 historical graphs." />
   </component>
 </project>
