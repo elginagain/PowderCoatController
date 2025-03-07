@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Past Oven Cycles</title>
+  <style>
+    body {
+      background-color: #222;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    table {
+      margin: auto;
+      border-collapse: collapse;
+      width: 80%;
+    }
+    th, td {
+      border: 1px solid #fff;
+      padding: 8px;
+      text-align: center;
+    }
+    a { color: #ffcc00; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <h1>Past Oven Heating Cycles</h1>
+  <table>
+    <tr>
+      <th>Cycle ID</th>
+      <th>Start Time</th>
+      <th>End Time</th>
+      <th>View Graph</th>
+    </tr>
+    {% for cycle in cycles %}
+    <tr>
+      <td>{{ cycle['id'] }}</td>
+      <td>{{ cycle['start_time'] }}</td>
+      <td>{{ cycle['end_time'] }}</td>
+      <td><a href="/cycles/{{ cycle['id'] }}">View</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+  <br>
+  <a href="/">Return to Dashboard</a>
+</body>
+</html>

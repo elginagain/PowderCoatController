@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Current Temperature History</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: #222;
+      color: #fff;
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <h1>Current Temperature (Last 2 Hours)</h1>
+  <canvas id="tempChart" width="800" height="400"></canvas>
+  <script>
+    const ctx = document.getElementById('tempChart').getContext('2d');
+    const tempChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets: [
+          {
+            label: 'Actual Temperature (°F)',
+            data: [],
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+            fill: true,
+            tension: 0.1
+          },
+          {
+            label: 'Set Temperature (°F)',
+            data: [],
+            borderColor: 'rgb(54, 162, 235)',
+            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+            fill: true,
+            tension: 0.1
+          }
+        ]
+      },
+      options: {
+        scales: {
+          x: {
+            type: 'time',
+            time: { unit: 'minute' },
+            title: { display: true, text: 'Time' },
+            ticks: { color: '#fff' }
+          },
+          y: {
+            title: { display: true, text: 'Temperature (°F)' },
+            ticks: { color: '#fff' }
+          }
+        },
+        plugins: {
+          legend: { labels: { color: '#fff' } }
+        }
+      }
+    });
+
+    function fetchCurrentHistory() {
+      fetch('/current_temp_history')
+        .then(response => response.json())
+        .then(data => {
+          // Separate the returned data into two datasets.
+          const data_actual = data.map(d => ({ x: d.x, y: d.y_actual }));
+          const data_set = data.map(d => ({ x: d.x, y: d.y_set }));
+          tempChart.data.datasets[0].data = data_actual;
+          tempChart.data.datasets[1].data = data_set;
+          tempChart.update();
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Update every 5 seconds.
+    setInterval(fetchCurrentHistory, 5000);
+    fetchCurrentHistory();
+  </script>
+</body>
+</html>
