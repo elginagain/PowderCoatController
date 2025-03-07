@@ -23,6 +23,7 @@
       color: #fff;
       border-radius: 8px;
       text-decoration: none;
+      display: inline-block;
     }
     .button:hover {
       background: #444;
@@ -82,7 +83,6 @@
       fetch('/current_temp_history')
         .then(response => response.json())
         .then(data => {
-          // Separate the returned data into two datasets.
           const data_actual = data.map(d => ({ x: d.x, y: d.y_actual }));
           const data_set = data.map(d => ({ x: d.x, y: d.y_set }));
           tempChart.data.datasets[0].data = data_actual;
@@ -92,7 +92,7 @@
         .catch(error => console.error('Error:', error));
     }
 
-    // Update the graph every 5 seconds.
+    // Update every 5 seconds.
     setInterval(fetchCurrentHistory, 5000);
     fetchCurrentHistory();
   </script>

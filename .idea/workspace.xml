@@ -4,8 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Added temperature graphing and database to store 20 historical graphs.">
-      <change beforePath="$PROJECT_DIR$/templates/current_temp_history.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/current_temp_history.html" afterDir="false" />
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="updated current_temp_history.html">
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -136,13 +136,22 @@
       <option name="project" value="LOCAL" />
       <updated>1741390557591</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="updated current_temp_history.html">
+      <option name="closed" value="true" />
+      <created>1741391105694</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1741391105694</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Just testing temperature_sensor.py" />
     <MESSAGE value="Putting everything up to github to test on the pi." />
     <MESSAGE value="Added temperature graphing and database to store 20 historical graphs." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added temperature graphing and database to store 20 historical graphs." />
+    <MESSAGE value="updated current_temp_history.html" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated current_temp_history.html" />
   </component>
 </project>

@@ -4,7 +4,7 @@ import json
 import time
 import threading
 from datetime import datetime, timedelta
-from temperature_sensor import read_temperature  # Your sensor code
+from temperature_sensor import read_temperature  # Your sensor reading function
 from db import get_db, init_db  # Database helper functions
 
 app = Flask(__name__)
@@ -68,11 +68,10 @@ def end_current_cycle():
 def purge_old_cycles():
     """
     Purge old cycles so that only the last 20 completed cycles remain.
-    This function deletes both the cycles and their associated readings.
+    This deletes both cycles and their associated readings.
     """
     conn = get_db()
     cur = conn.cursor()
-    # Get cycle IDs beyond the most recent 20 (ordered by end_time descending)
     cur.execute("""
         SELECT id FROM cycles
         WHERE end_time IS NOT NULL
@@ -94,8 +93,8 @@ def purge_old_cycles():
 # -------------------------
 def temperature_logger():
     """
-    Continuously read the current temperature and, if a cycle is active,
-    write the reading (with both actual and set temperatures) to the database.
+    Continuously reads the current temperature and, if a cycle is active,
+    writes the reading (including both actual and set temperatures) to the database.
     """
     global current_cycle_id
     while True:
@@ -163,7 +162,7 @@ def toggle_light():
 def toggle_oven():
     global current_cycle_id
     config["oven_on"] = not config.get("oven_on", False)
-    # When turning on the oven, start a new cycle; when turning off, end the cycle.
+    # When turning on, start a new cycle; when turning off, end it.
     if config["oven_on"]:
         start_new_cycle()
     else:
@@ -192,7 +191,7 @@ def set_timer():
     global time_remaining, timer_running
     data = request.get_json()
     with timer_lock:
-        time_remaining = data.get("time", 0) * 60  # minutes to seconds
+        time_remaining = data.get("time", 0) * 60  # Convert minutes to seconds
         timer_running = False
         config["timer_running"] = False
         config["time_remaining"] = int(time_remaining)
@@ -221,21 +220,36 @@ def current_temperature():
     return jsonify({"current_temperature": temp})
 
 # -------------------------
-# New Routes for Graphing
+# New Routes for Graphing and Cycle Data
 # -------------------------
 @app.route('/temperature_graph')
 def temperature_graph():
-    """Page showing the live current temperature history (last 2 hours)."""
+    """Page showing live current temperature history (last 2 hours)."""
     return render_template('current_temp_history.html')
 
 @app.route('/current_temp_history')
 def current_temp_history():
     """
     Return readings for the current cycle over the last 2 hours.
-    Each record includes both the actual and set temperatures.
+    If no cycle is active, try to return data from the most recent cycle that ended within 2 hours.
+    Each record includes both actual and set temperatures.
     """
     two_hours_ago = datetime.now() - timedelta(hours=2)
-    if current_cycle_id is None:
+    cycle_id_to_use = current_cycle_id
+    if cycle_id_to_use is None:
+        # Get the most recent cycle that ended within the past 2 hours.
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT id FROM cycles
+            WHERE end_time IS NOT NULL AND end_time >= ?
+            ORDER BY end_time DESC LIMIT 1
+        """, (two_hours_ago,))
+        row = cur.fetchone()
+        conn.close()
+        if row:
+            cycle_id_to_use = row["id"]
+    if cycle_id_to_use is None:
         return jsonify([])
     conn = get_db()
     cur = conn.cursor()
@@ -244,7 +258,7 @@ def current_temp_history():
         FROM readings
         WHERE cycle_id = ? AND timestamp >= ?
         ORDER BY timestamp ASC
-    """, (current_cycle_id, two_hours_ago))
+    """, (cycle_id_to_use, two_hours_ago))
     rows = cur.fetchall()
     conn.close()
     data = []

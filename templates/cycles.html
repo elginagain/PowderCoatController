@@ -9,6 +9,8 @@
       color: #fff;
       font-family: Arial, sans-serif;
       text-align: center;
+      margin: 0;
+      padding: 20px;
     }
     table {
       margin: auto;
@@ -20,7 +22,21 @@
       padding: 8px;
       text-align: center;
     }
-    a { color: #ffcc00; text-decoration: none; }
+    .button {
+      font-size: 24px;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      background: #333;
+      border: 2px solid #fff;
+      color: #fff;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .button:hover {
+      background: #444;
+    }
   </style>
 </head>
 <body>
@@ -37,11 +53,11 @@
       <td>{{ cycle['id'] }}</td>
       <td>{{ cycle['start_time'] }}</td>
       <td>{{ cycle['end_time'] }}</td>
-      <td><a href="/cycles/{{ cycle['id'] }}">View</a></td>
+      <td><a href="/cycles/{{ cycle['id'] }}" class="button">View</a></td>
     </tr>
     {% endfor %}
   </table>
   <br>
-  <a href="/">Return to Dashboard</a>
+  <a href="/" class="button">Back to Dashboard</a>
 </body>
 </html>
