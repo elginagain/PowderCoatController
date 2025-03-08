@@ -1,5 +1,5 @@
 import os
-os.environ["GPIO_USE_DEV_MEM"] = "1"  # This is still set, though pigpio in soft mode won't use it
+os.environ["GPIO_USE_DEV_MEM"] = "1"  # Retain this if needed
 
 from flask import Flask, render_template, request, jsonify
 import json
@@ -38,19 +38,19 @@ config = load_config()
 init_db()
 
 # -------------------------
-# pigpio Setup for SSR Control (using soft mode)
+# pigpio Setup for SSR Control
 # -------------------------
 if sys.platform.startswith("linux"):
     try:
         import pigpio
-        # Instead of connecting to the daemon, we use 'soft' mode so pigpio works on non‑Raspberry Pi OS
-        pi = pigpio.pi('soft')
+        # Connect to the pigpio daemon running on localhost at port 8888.
+        pi = pigpio.pi()
         if not pi.connected:
-            raise Exception("pigpio in soft mode not connected")
+            raise Exception("pigpio daemon not connected")
         SSR_PIN = 17  # Adjust this if needed
-        # Set PWM frequency to 100Hz (pigpio soft mode will simulate this)
+        # Set PWM frequency to 100Hz.
         pi.set_PWM_frequency(SSR_PIN, 100)
-        # Initialize with 0 duty cycle (0 out of 255)
+        # Initialize with 0 duty cycle (pigpio duty cycle range: 0-255).
         pi.set_PWM_dutycycle(SSR_PIN, 0)
     except Exception as e:
         print("Error setting up pigpio:", e)
@@ -138,7 +138,7 @@ logger_thread = threading.Thread(target=temperature_logger, daemon=True)
 logger_thread.start()
 
 # -------------------------
-# Timer Logic (Existing)
+# Timer Logic
 # -------------------------
 timer_running = config.get("timer_running", False)
 time_remaining = config.get("time_remaining", 0)
@@ -195,7 +195,7 @@ def pid_control_loop():
         duty_cycle = max(0, min(100, output))
         print(f"PID: setpoint={setpoint}, current={current_temp:.2f}, error={error:.2f}, duty={duty_cycle:.2f}")
         if pi is not None:
-            # pigpio duty cycle range is 0-255; convert accordingly.
+            # pigpio duty cycle range is 0-255
             pigpio_duty = int((duty_cycle / 100.0) * 255)
             print(f"Calling pi.set_PWM_dutycycle({SSR_PIN}, {pigpio_duty})")
             pi.set_PWM_dutycycle(SSR_PIN, pigpio_duty)
@@ -207,7 +207,7 @@ def pid_control_loop():
     print("PID control loop ended.")
 
 # -------------------------
-# Routes (Existing and New)
+# Routes
 # -------------------------
 @app.route('/')
 def dashboard():
