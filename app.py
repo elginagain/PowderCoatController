@@ -1,5 +1,6 @@
 import os
-os.environ["GPIO_USE_DEV_MEM"] = "1"  # Retain this if needed
+# Set the environment variable (optional when using pigpio soft mode)
+os.environ["GPIO_USE_DEV_MEM"] = "1"
 
 from flask import Flask, render_template, request, jsonify
 import json
@@ -38,22 +39,22 @@ config = load_config()
 init_db()
 
 # -------------------------
-# pigpio Setup for SSR Control
+# pigpio Setup for SSR Control using soft mode
 # -------------------------
 if sys.platform.startswith("linux"):
     try:
         import pigpio
-        # Connect to the pigpio daemon running on localhost at port 8888.
-        pi = pigpio.pi()
+        # Use pigpio in soft mode to bypass pigpiod and hardware detection.
+        pi = pigpio.pi("soft")
         if not pi.connected:
-            raise Exception("pigpio daemon not connected")
+            raise Exception("pigpio soft mode not connected")
         SSR_PIN = 17  # Adjust this if needed
         # Set PWM frequency to 100Hz.
         pi.set_PWM_frequency(SSR_PIN, 100)
-        # Initialize with 0 duty cycle (pigpio duty cycle range: 0-255).
+        # Set initial duty cycle to 0 (LED off).
         pi.set_PWM_dutycycle(SSR_PIN, 0)
     except Exception as e:
-        print("Error setting up pigpio:", e)
+        print("Error setting up pigpio in soft mode:", e)
         pi = None
 else:
     pi = None
@@ -165,7 +166,7 @@ timer_thread_instance = threading.Thread(target=timer_thread, daemon=True)
 timer_thread_instance.start()
 
 # -------------------------
-# PID Control for SSR Output (using pigpio)
+# PID Control for SSR Output (using pigpio soft mode)
 # -------------------------
 # PID parameters (adjust these for your oven)
 Kp = 1.0
@@ -195,7 +196,7 @@ def pid_control_loop():
         duty_cycle = max(0, min(100, output))
         print(f"PID: setpoint={setpoint}, current={current_temp:.2f}, error={error:.2f}, duty={duty_cycle:.2f}")
         if pi is not None:
-            # pigpio duty cycle range is 0-255
+            # pigpio duty cycle range is 0-255; convert the 0-100 scale accordingly.
             pigpio_duty = int((duty_cycle / 100.0) * 255)
             print(f"Calling pi.set_PWM_dutycycle({SSR_PIN}, {pigpio_duty})")
             pi.set_PWM_dutycycle(SSR_PIN, pigpio_duty)
@@ -397,7 +398,7 @@ def test_pwm():
     def pwm_test():
         if pi is not None:
             print("Forcing PWM to 100% duty for 10 seconds")
-            pi.set_PWM_dutycycle(SSR_PIN, 255)  # 100% duty (pigpio uses 0-255)
+            pi.set_PWM_dutycycle(SSR_PIN, 255)  # 100% duty
             time.sleep(10)
             pi.set_PWM_dutycycle(SSR_PIN, 0)
             print("PWM test complete")
