@@ -1,3 +1,6 @@
+import os
+os.environ["GPIO_USE_DEV_MEM"] = "1"  # Force RPi.GPIO to use /dev/mem
+
 from flask import Flask, render_template, request, jsonify
 import os
 import json
