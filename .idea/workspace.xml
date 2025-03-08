@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="updated app.py,  current_temp_history.html, cycles.html, and cycle_graph.html to fix an issue with the temp graph not displaying.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/dashboard.html" afterDir="false" />
-    </list>
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Updated several files to add debugging features to determine why the graphing function isn't working." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -154,7 +150,15 @@
       <option name="project" value="LOCAL" />
       <updated>1741391659181</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Updated several files to add debugging features to determine why the graphing function isn't working.">
+      <option name="closed" value="true" />
+      <created>1741393029694</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1741393029694</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -163,6 +167,7 @@
     <MESSAGE value="Added temperature graphing and database to store 20 historical graphs." />
     <MESSAGE value="updated current_temp_history.html" />
     <MESSAGE value="updated app.py,  current_temp_history.html, cycles.html, and cycle_graph.html to fix an issue with the temp graph not displaying." />
-    <option name="LAST_COMMIT_MESSAGE" value="updated app.py,  current_temp_history.html, cycles.html, and cycle_graph.html to fix an issue with the temp graph not displaying." />
+    <MESSAGE value="Updated several files to add debugging features to determine why the graphing function isn't working." />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated several files to add debugging features to determine why the graphing function isn't working." />
   </component>
 </project>
