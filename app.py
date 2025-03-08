@@ -48,12 +48,11 @@ if sys.platform.startswith("linux"):
         GPIO.setwarnings(False)
         # Register cleanup on exit.
         atexit.register(GPIO.cleanup)
-        # Clean up any previous allocations.
-        GPIO.cleanup()
+        # Do NOT call GPIO.cleanup() immediately here.
         GPIO.setmode(GPIO.BCM)
-        SSR_PIN = 17  # Adjust this if needed.
+        SSR_PIN = 17  # Adjust this if needed
         GPIO.setup(SSR_PIN, GPIO.OUT)
-        # Use a PWM frequency of 100Hz for the SSR.
+        # Use a PWM frequency of 100Hz for SSR control.
         pwm = GPIO.PWM(SSR_PIN, 100)
         pwm.start(0)  # Start with 0% duty cycle.
     except Exception as e:
@@ -390,6 +389,21 @@ def status():
          "timer_running": timer_running,
          "time_remaining": int(time_remaining)
     })
+
+# -------------------------
+# New Route for PWM Test
+# -------------------------
+@app.route('/test_pwm', methods=['GET'])
+def test_pwm():
+    def pwm_test():
+        if pwm is not None:
+            print("Forcing PWM to 100% duty for 10 seconds")
+            pwm.ChangeDutyCycle(100)
+            time.sleep(10)
+            pwm.ChangeDutyCycle(0)
+            print("PWM test complete")
+    threading.Thread(target=pwm_test, daemon=True).start()
+    return "PWM test started"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

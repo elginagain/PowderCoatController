@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="elow is an updated version of the GPIO setup section for your app.py. This version does a few things to help resolve the &quot;GPIO not allocated&quot; error:&#10;&#10;    Disables warnings: Some issues occur because of leftover warnings or previous allocations.&#10;    Registers a cleanup handler via atexit: This ensures that GPIO.cleanup() is always called on exit.&#10;    Attempts a cleanup before re‑initializing: This can help free any resources left over from previous runs.&#10;    Uses GPIO.setmode(GPIO.BCM) explicitly: To ensure the board is set to BCM mode.">
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Added import os&#10;os.environ[&quot;GPIO_USE_DEV_MEM&quot;] = &quot;1&quot;  # Force RPi.GPIO to use /dev/mem&#10;&#10;Since you’re running Debian Bookworm instead of Raspberry Pi OS, the /dev/gpiomem device isn’t being created by your kernel. RPi.GPIO normally uses /dev/gpiomem on Raspberry Pi OS, but on other distributions, you’ll need to force it to use /dev/mem instead. (Be aware that using /dev/mem is less secure, so you should only run this code in a controlled environment.)&#10;&#10;One common workaround is to set the environment variable GPIO_USE_DEV_MEM to &quot;1&quot; before RPi.GPIO is imported. This tells RPi.GPIO to use /dev/mem.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -289,7 +290,15 @@
       <option name="project" value="LOCAL" />
       <updated>1741409986718</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="Added import os&#10;os.environ[&quot;GPIO_USE_DEV_MEM&quot;] = &quot;1&quot;  # Force RPi.GPIO to use /dev/mem&#10;&#10;Since you’re running Debian Bookworm instead of Raspberry Pi OS, the /dev/gpiomem device isn’t being created by your kernel. RPi.GPIO normally uses /dev/gpiomem on Raspberry Pi OS, but on other distributions, you’ll need to force it to use /dev/mem instead. (Be aware that using /dev/mem is less secure, so you should only run this code in a controlled environment.)&#10;&#10;One common workaround is to set the environment variable GPIO_USE_DEV_MEM to &quot;1&quot; before RPi.GPIO is imported. This tells RPi.GPIO to use /dev/mem.">
+      <option name="closed" value="true" />
+      <created>1741411522071</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1741411522071</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -309,6 +318,7 @@
     <MESSAGE value="Key Points&#10;&#10;    The PID loop now prints debugging messages and calls pwm.ChangeDutyCycle(duty_cycle) without inversion, because your LED is active‑high.&#10;    The /power endpoint starts the PID loop if the oven is turned on.&#10;    The application should be run with sudo python3 app.py to ensure GPIO access.&#10;    The rest of the code (cycle management, temperature logging, timer, routes) remains as before." />
     <MESSAGE value="added GPIO.cleanup()  # Clean up any previous allocations" />
     <MESSAGE value="elow is an updated version of the GPIO setup section for your app.py. This version does a few things to help resolve the &quot;GPIO not allocated&quot; error:&#10;&#10;    Disables warnings: Some issues occur because of leftover warnings or previous allocations.&#10;    Registers a cleanup handler via atexit: This ensures that GPIO.cleanup() is always called on exit.&#10;    Attempts a cleanup before re‑initializing: This can help free any resources left over from previous runs.&#10;    Uses GPIO.setmode(GPIO.BCM) explicitly: To ensure the board is set to BCM mode." />
-    <option name="LAST_COMMIT_MESSAGE" value="elow is an updated version of the GPIO setup section for your app.py. This version does a few things to help resolve the &quot;GPIO not allocated&quot; error:&#10;&#10;    Disables warnings: Some issues occur because of leftover warnings or previous allocations.&#10;    Registers a cleanup handler via atexit: This ensures that GPIO.cleanup() is always called on exit.&#10;    Attempts a cleanup before re‑initializing: This can help free any resources left over from previous runs.&#10;    Uses GPIO.setmode(GPIO.BCM) explicitly: To ensure the board is set to BCM mode." />
+    <MESSAGE value="Added import os&#10;os.environ[&quot;GPIO_USE_DEV_MEM&quot;] = &quot;1&quot;  # Force RPi.GPIO to use /dev/mem&#10;&#10;Since you’re running Debian Bookworm instead of Raspberry Pi OS, the /dev/gpiomem device isn’t being created by your kernel. RPi.GPIO normally uses /dev/gpiomem on Raspberry Pi OS, but on other distributions, you’ll need to force it to use /dev/mem instead. (Be aware that using /dev/mem is less secure, so you should only run this code in a controlled environment.)&#10;&#10;One common workaround is to set the environment variable GPIO_USE_DEV_MEM to &quot;1&quot; before RPi.GPIO is imported. This tells RPi.GPIO to use /dev/mem." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added import os&#10;os.environ[&quot;GPIO_USE_DEV_MEM&quot;] = &quot;1&quot;  # Force RPi.GPIO to use /dev/mem&#10;&#10;Since you’re running Debian Bookworm instead of Raspberry Pi OS, the /dev/gpiomem device isn’t being created by your kernel. RPi.GPIO normally uses /dev/gpiomem on Raspberry Pi OS, but on other distributions, you’ll need to force it to use /dev/mem instead. (Be aware that using /dev/mem is less secure, so you should only run this code in a controlled environment.)&#10;&#10;One common workaround is to set the environment variable GPIO_USE_DEV_MEM to &quot;1&quot; before RPi.GPIO is imported. This tells RPi.GPIO to use /dev/mem." />
   </component>
 </project>
