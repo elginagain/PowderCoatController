@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Updated several files to add debugging features to determine why the graphing function isn't working.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/current_temp_history.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/current_temp_history.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/cycle_graph.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/cycle_graph.html" afterDir="false" />
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="How This Fixes the Error&#10;&#10;    Chart.js 3+ requires a date adapter for the time scale.&#10;    By adding Luxon and chartjs-adapter-luxon, Chart.js can parse and display time-based data.&#10;    The error “Check that a complete date adapter is provided” should go away once these scripts are included in the correct order.">
+      <change beforePath="$PROJECT_DIR$/templates/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/dashboard.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -178,7 +176,15 @@
       <option name="project" value="LOCAL" />
       <updated>1741394983653</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="How This Fixes the Error&#10;&#10;    Chart.js 3+ requires a date adapter for the time scale.&#10;    By adding Luxon and chartjs-adapter-luxon, Chart.js can parse and display time-based data.&#10;    The error “Check that a complete date adapter is provided” should go away once these scripts are included in the correct order.">
+      <option name="closed" value="true" />
+      <created>1741395592402</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1741395592402</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -188,6 +194,7 @@
     <MESSAGE value="updated current_temp_history.html" />
     <MESSAGE value="updated app.py,  current_temp_history.html, cycles.html, and cycle_graph.html to fix an issue with the temp graph not displaying." />
     <MESSAGE value="Updated several files to add debugging features to determine why the graphing function isn't working." />
-    <option name="LAST_COMMIT_MESSAGE" value="Updated several files to add debugging features to determine why the graphing function isn't working." />
+    <MESSAGE value="How This Fixes the Error&#10;&#10;    Chart.js 3+ requires a date adapter for the time scale.&#10;    By adding Luxon and chartjs-adapter-luxon, Chart.js can parse and display time-based data.&#10;    The error “Check that a complete date adapter is provided” should go away once these scripts are included in the correct order." />
+    <option name="LAST_COMMIT_MESSAGE" value="How This Fixes the Error&#10;&#10;    Chart.js 3+ requires a date adapter for the time scale.&#10;    By adding Luxon and chartjs-adapter-luxon, Chart.js can parse and display time-based data.&#10;    The error “Check that a complete date adapter is provided” should go away once these scripts are included in the correct order." />
   </component>
 </project>
