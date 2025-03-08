@@ -1,5 +1,5 @@
 import os
-os.environ["GPIO_USE_DEV_MEM"] = "1"  # Retain if needed
+os.environ["GPIO_USE_DEV_MEM"] = "1"  # Force RPi.GPIO to use /dev/mem
 
 from flask import Flask, render_template, request, jsonify
 import json
@@ -38,25 +38,23 @@ config = load_config()
 init_db()
 
 # -------------------------
-# pigpio Setup for SSR Control using soft mode
+# RPi.GPIO Setup for SSR Control
 # -------------------------
 if sys.platform.startswith("linux"):
     try:
-        import pigpio
-        # Try connecting in soft mode using port 8888
-        pi = pigpio.pi("soft", 8888)
-        if not pi.connected:
-            print("Warning: pigpio soft mode did not report as connected, continuing anyway.")
-        SSR_PIN = 17  # Adjust this if needed
-        # Set PWM frequency to 100Hz.
-        pi.set_PWM_frequency(SSR_PIN, 100)
-        # Set initial duty cycle to 0 (LED off)
-        pi.set_PWM_dutycycle(SSR_PIN, 0)
+        import RPi.GPIO as GPIO
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BCM)
+        SSR_PIN = 17  # Adjust if needed
+        GPIO.setup(SSR_PIN, GPIO.OUT)
+        # Set up PWM on SSR_PIN at 100Hz.
+        pwm = GPIO.PWM(SSR_PIN, 100)
+        pwm.start(0)  # Start with 0% duty cycle (heater off)
     except Exception as e:
-        print("Error setting up pigpio in soft mode:", e)
-        pi = None
+        print("Error setting up GPIO:", e)
+        pwm = None
 else:
-    pi = None
+    pwm = None
 
 # Global variable to hold the current cycle id (None if no active cycle)
 current_cycle_id = None
@@ -165,7 +163,7 @@ timer_thread_instance = threading.Thread(target=timer_thread, daemon=True)
 timer_thread_instance.start()
 
 # -------------------------
-# PID Control for SSR Output (using pigpio soft mode)
+# PID Control for SSR Output (using RPi.GPIO)
 # -------------------------
 # PID parameters (adjust these for your oven)
 Kp = 1.0
@@ -194,16 +192,14 @@ def pid_control_loop():
         output = Kp * error + Ki * integral + Kd * derivative
         duty_cycle = max(0, min(100, output))
         print(f"PID: setpoint={setpoint}, current={current_temp:.2f}, error={error:.2f}, duty={duty_cycle:.2f}")
-        if pi is not None:
-            # Convert duty cycle (0-100) to pigpio's 0-255 scale.
-            pigpio_duty = int((duty_cycle / 100.0) * 255)
-            print(f"Calling pi.set_PWM_dutycycle({SSR_PIN}, {pigpio_duty})")
-            pi.set_PWM_dutycycle(SSR_PIN, pigpio_duty)
+        if pwm is not None:
+            print(f"Calling pwm.ChangeDutyCycle({duty_cycle})")
+            pwm.ChangeDutyCycle(duty_cycle)
         last_error = error
         last_time = current_time
         time.sleep(1)
-    if pi is not None:
-        pi.set_PWM_dutycycle(SSR_PIN, 0)
+    if pwm is not None:
+        pwm.ChangeDutyCycle(0)
     print("PID control loop ended.")
 
 # -------------------------
@@ -390,16 +386,16 @@ def status():
     })
 
 # -------------------------
-# New Route for PWM Test (using pigpio soft mode)
+# New Route for PWM Test (using RPi.GPIO)
 # -------------------------
 @app.route('/test_pwm', methods=['GET'])
 def test_pwm():
     def pwm_test():
-        if pi is not None:
+        if pwm is not None:
             print("Forcing PWM to 100% duty for 10 seconds")
-            pi.set_PWM_dutycycle(SSR_PIN, 255)  # 100% duty (pigpio uses 0-255)
+            pwm.ChangeDutyCycle(100)  # 100% duty
             time.sleep(10)
-            pi.set_PWM_dutycycle(SSR_PIN, 0)
+            pwm.ChangeDutyCycle(0)
             print("PWM test complete")
     threading.Thread(target=pwm_test, daemon=True).start()
     return "PWM test started"
