@@ -187,6 +187,8 @@ def pid_control_loop():
         derivative = (error - last_error) / dt
         output = Kp * error + Ki * integral + Kd * derivative
         duty_cycle = max(0, min(100, output))
+        # Invert duty cycle if your LED (and SSR input) is active low:
+        inverted_duty = 100 - duty_cycle
         if pwm is not None:
             pwm.ChangeDutyCycle(duty_cycle)
         print(f"PID: setpoint={setpoint}, current={current_temp:.2f}, error={error:.2f}, duty={duty_cycle:.2f}")
