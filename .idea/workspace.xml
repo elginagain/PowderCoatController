@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Below is a complete updated version of your app.py that replaces RPi.GPIO with the pigpio library for GPIO/PWM control. This approach works more reliably on Debian‑based systems (like Raspberry Pi OS Lite 32‑bit on your hardware) and avoids the “GPIO not allocated” error. Note that you must have pigpiod (the pigpio daemon) running for this code to work. You can start it with:">
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Below is the complete updated app.py that uses pigpio in its normal mode (without “soft”) so that it connects to the pigpiod daemon running on localhost.">
+      <change afterPath="$PROJECT_DIR$/run_app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -313,7 +313,39 @@
       <option name="project" value="LOCAL" />
       <updated>1741458856167</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="Key Points&#10;&#10;    This version uses pigpio in soft mode by calling:&#10;&#10;pi = pigpio.pi('soft')&#10;&#10;This bypasses hardware detection and avoids the &quot;GPIO not allocated&quot; error.&#10;The PID loop computes a duty cycle (0–100) and converts it to pigpio’s scale (0–255).&#10;A new test endpoint /test_pwm lets you force a 100% PWM output for 10 seconds to check the LED.&#10;Make sure to run pigpio in soft mode; you do not need to start pigpiod when using soft mode.">
+      <option name="closed" value="true" />
+      <created>1741459839066</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1741459839066</updated>
+    </task>
+    <task id="LOCAL-00029" summary="Below is the complete updated app.py that uses pigpio in its normal mode (without “soft”) so that it connects to the pigpiod daemon running on localhost.">
+      <option name="closed" value="true" />
+      <created>1741460036662</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1741460036662</updated>
+    </task>
+    <task id="LOCAL-00030" summary="Below is the complete updated app.py that uses pigpio in its normal mode (without “soft”) so that it connects to the pigpiod daemon running on localhost.">
+      <option name="closed" value="true" />
+      <created>1741460216043</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1741460216043</updated>
+    </task>
+    <task id="LOCAL-00031" summary="Below is the complete updated app.py that uses pigpio in its normal mode (without “soft”) so that it connects to the pigpiod daemon running on localhost.">
+      <option name="closed" value="true" />
+      <created>1741460612092</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1741460612092</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -336,6 +368,8 @@
     <MESSAGE value="Added import os&#10;os.environ[&quot;GPIO_USE_DEV_MEM&quot;] = &quot;1&quot;  # Force RPi.GPIO to use /dev/mem&#10;&#10;Since you’re running Debian Bookworm instead of Raspberry Pi OS, the /dev/gpiomem device isn’t being created by your kernel. RPi.GPIO normally uses /dev/gpiomem on Raspberry Pi OS, but on other distributions, you’ll need to force it to use /dev/mem instead. (Be aware that using /dev/mem is less secure, so you should only run this code in a controlled environment.)&#10;&#10;One common workaround is to set the environment variable GPIO_USE_DEV_MEM to &quot;1&quot; before RPi.GPIO is imported. This tells RPi.GPIO to use /dev/mem." />
     <MESSAGE value="Below is an updated full version of your app.py with one key change: the immediate call to GPIO.cleanup() at startup has been removed. (We’re still registering cleanup via atexit.) In some cases, calling GPIO.cleanup() right away can interfere with RPi.GPIO’s ability to determine the SOC peripheral base address." />
     <MESSAGE value="Below is a complete updated version of your app.py that replaces RPi.GPIO with the pigpio library for GPIO/PWM control. This approach works more reliably on Debian‑based systems (like Raspberry Pi OS Lite 32‑bit on your hardware) and avoids the “GPIO not allocated” error. Note that you must have pigpiod (the pigpio daemon) running for this code to work. You can start it with:" />
-    <option name="LAST_COMMIT_MESSAGE" value="Below is a complete updated version of your app.py that replaces RPi.GPIO with the pigpio library for GPIO/PWM control. This approach works more reliably on Debian‑based systems (like Raspberry Pi OS Lite 32‑bit on your hardware) and avoids the “GPIO not allocated” error. Note that you must have pigpiod (the pigpio daemon) running for this code to work. You can start it with:" />
+    <MESSAGE value="Key Points&#10;&#10;    This version uses pigpio in soft mode by calling:&#10;&#10;pi = pigpio.pi('soft')&#10;&#10;This bypasses hardware detection and avoids the &quot;GPIO not allocated&quot; error.&#10;The PID loop computes a duty cycle (0–100) and converts it to pigpio’s scale (0–255).&#10;A new test endpoint /test_pwm lets you force a 100% PWM output for 10 seconds to check the LED.&#10;Make sure to run pigpio in soft mode; you do not need to start pigpiod when using soft mode." />
+    <MESSAGE value="Below is the complete updated app.py that uses pigpio in its normal mode (without “soft”) so that it connects to the pigpiod daemon running on localhost." />
+    <option name="LAST_COMMIT_MESSAGE" value="Below is the complete updated app.py that uses pigpio in its normal mode (without “soft”) so that it connects to the pigpiod daemon running on localhost." />
   </component>
 </project>
