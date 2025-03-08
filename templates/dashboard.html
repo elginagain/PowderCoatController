@@ -80,11 +80,11 @@
             font-size: 48px;
             border: 2px solid #fff;
             padding: 10px;
-            width: 200px;
+            width: 200px;      /* Increased from 150px to 200px */
             text-align: center;
             background: #333;
-            cursor: pointer; /* for keypad */
-            white-space: nowrap; /* Prevent text wrapping */
+            cursor: pointer;   /* for keypad */
+            white-space: nowrap;  /* Prevent text wrapping */
         }
         .arrow {
             font-size: 36px;
@@ -230,9 +230,7 @@
         let timerSeconds = 0;
         let timerInterval;
 
-        // =====================================================
-        // 1) Update Current Temperature (every second)
-        // =====================================================
+        // Function to update current sensor temperature
         function updateCurrentTemp() {
             $.ajax({
                 url: '/current_temperature',
@@ -248,18 +246,32 @@
         setInterval(updateCurrentTemp, 1000);
         updateCurrentTemp();
 
-        // =====================================================
-        // 2) Light Toggle
-        // =====================================================
+        // Function to update oven status from the server
+        function updateOvenStatus() {
+            $.ajax({
+                url: '/status',
+                method: 'GET',
+                success: function(data) {
+                    $("#toggleOven").text(data.oven_on ? "Stop Oven" : "Start Oven");
+                    $("#ovenStatus").text(data.oven_on ? "Running" : "Stopped");
+                },
+                error: function() {
+                    console.error("Error fetching oven status.");
+                }
+            });
+        }
+        // Call updateOvenStatus on page load and every 5 seconds.
+        updateOvenStatus();
+        setInterval(updateOvenStatus, 5000);
+
+        // Light Toggle
         $("#toggleLight").click(function() {
             $.post("/toggle_light", function(response) {
                 $("#toggleLight").text(response.light_on ? "💡" : "🔆");
             });
         });
 
-        // =====================================================
-        // 3) Oven Toggle
-        // =====================================================
+        // Oven Toggle
         $("#toggleOven").click(function() {
             console.log("toggle oven clicked");
             $.post("/power", function(response) {
@@ -269,9 +281,7 @@
             });
         });
 
-        // =====================================================
-        // 4) Timer Start/Stop
-        // =====================================================
+        // Timer Start/Stop
         $("#toggleTimer").click(function() {
             if (timerRunning) {
                 clearInterval(timerInterval);
@@ -306,7 +316,7 @@
 
         // Timer Increase/Decrease
         $("#increaseTime").click(function() {
-            timerSeconds += 300; // 5 minutes
+            timerSeconds += 300;
             updateTimerDisplay();
         });
         $("#decreaseTime").click(function() {
@@ -316,17 +326,13 @@
             }
         });
 
-        // =====================================================
-        // 5) Temperature Increase/Decrease
-        //    (Send JSON with correct content-type)
-        // =====================================================
+        // Temperature Increase/Decrease with proper JSON call
         $("#increaseTemp").click(function() {
             let temp = parseInt($("#setTemp").text()) || 0;
             temp += 25;
             $("#setTemp").text(temp);
             updateSetTemperature(temp);
         });
-
         $("#decreaseTemp").click(function() {
             let temp = parseInt($("#setTemp").text()) || 0;
             temp -= 25;
@@ -334,7 +340,6 @@
             updateSetTemperature(temp);
         });
 
-        // Helper function to send new temperature to /set_temperature
         function updateSetTemperature(newTemp) {
             $.ajax({
                 url: "/set_temperature",
@@ -351,9 +356,7 @@
             });
         }
 
-        // =====================================================
-        // 6) Keypad Handlers (for setTemp and setTimer)
-        // =====================================================
+        // Keypad Handlers
         $(".temp-set, .timer-set").click(function() {
             $("#keypad").fadeIn();
             $("#keypad").data("target", this);
@@ -374,11 +377,9 @@
             if (!isNaN(newValue)) {
                 $(target).text(newValue);
                 if ($(target).attr("id") === "setTimer") {
-                    // Convert minutes to seconds
                     timerSeconds = newValue * 60;
                     updateTimerDisplay();
                 } else if ($(target).attr("id") === "setTemp") {
-                    // Send new temperature to the server
                     updateSetTemperature(newValue);
                 }
             }

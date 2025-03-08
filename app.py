@@ -316,5 +316,13 @@ def cycle_data(cycle_id):
         })
     return jsonify(data)
 
+@app.route('/status')
+def status():
+    return jsonify({
+         "oven_on": config.get("oven_on", False),
+         "timer_running": timer_running,
+         "time_remaining": int(time_remaining)
+    })
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
