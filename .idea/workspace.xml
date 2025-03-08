@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Below is the complete updated app.py that uses pigpio in its normal mode (without “soft”) so that it connects to the pigpiod daemon running on localhost.">
-      <change afterPath="$PROJECT_DIR$/run_app.py" afterDir="false" />
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="created run_app.sh">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -345,7 +345,23 @@
       <option name="project" value="LOCAL" />
       <updated>1741460612092</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="created run_app.py">
+      <option name="closed" value="true" />
+      <created>1741462186646</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1741462186646</updated>
+    </task>
+    <task id="LOCAL-00033" summary="created run_app.sh">
+      <option name="closed" value="true" />
+      <created>1741462254277</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1741462254277</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -370,6 +386,8 @@
     <MESSAGE value="Below is a complete updated version of your app.py that replaces RPi.GPIO with the pigpio library for GPIO/PWM control. This approach works more reliably on Debian‑based systems (like Raspberry Pi OS Lite 32‑bit on your hardware) and avoids the “GPIO not allocated” error. Note that you must have pigpiod (the pigpio daemon) running for this code to work. You can start it with:" />
     <MESSAGE value="Key Points&#10;&#10;    This version uses pigpio in soft mode by calling:&#10;&#10;pi = pigpio.pi('soft')&#10;&#10;This bypasses hardware detection and avoids the &quot;GPIO not allocated&quot; error.&#10;The PID loop computes a duty cycle (0–100) and converts it to pigpio’s scale (0–255).&#10;A new test endpoint /test_pwm lets you force a 100% PWM output for 10 seconds to check the LED.&#10;Make sure to run pigpio in soft mode; you do not need to start pigpiod when using soft mode." />
     <MESSAGE value="Below is the complete updated app.py that uses pigpio in its normal mode (without “soft”) so that it connects to the pigpiod daemon running on localhost." />
-    <option name="LAST_COMMIT_MESSAGE" value="Below is the complete updated app.py that uses pigpio in its normal mode (without “soft”) so that it connects to the pigpiod daemon running on localhost." />
+    <MESSAGE value="created run_app.py" />
+    <MESSAGE value="created run_app.sh" />
+    <option name="LAST_COMMIT_MESSAGE" value="created run_app.sh" />
   </component>
 </project>

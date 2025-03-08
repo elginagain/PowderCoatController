@@ -43,8 +43,8 @@ init_db()
 if sys.platform.startswith("linux"):
     try:
         import pigpio
-        # Attempt to use pigpio in soft mode. This bypasses hardware detection.
-        pi = pigpio.pi("soft")
+        # Try connecting in soft mode using port 8888
+        pi = pigpio.pi("soft", 8888)
         if not pi.connected:
             print("Warning: pigpio soft mode did not report as connected, continuing anyway.")
         SSR_PIN = 17  # Adjust this if needed
