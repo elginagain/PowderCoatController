@@ -381,4 +381,5 @@ def test_pwm():
 
 if __name__ == '__main__':
     init_gpio()  # Initialize GPIO now (after all imports)
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
+
