@@ -1,5 +1,6 @@
 import os
-#os.environ["GPIO_USE_DEV_MEM"] = "1"  # Force RPi.GPIO to use /dev/mem
+# Do not force using /dev/mem now; let RPi.GPIO use /dev/gpiomem.
+# os.environ["GPIO_USE_DEV_MEM"] = "1"
 
 from flask import Flask, render_template, request, jsonify
 import json
@@ -37,33 +38,34 @@ config = load_config()
 # Initialize the database at startup.
 init_db()
 
-# -------------------------
-# RPi.GPIO Setup for SSR Control
-# -------------------------
-if sys.platform.startswith("linux"):
-    try:
-        import RPi.GPIO as GPIO
-        GPIO.setwarnings(False)
-        GPIO.setmode(GPIO.BCM)
-        SSR_PIN = 17  # Adjust if needed
-        GPIO.setup(SSR_PIN, GPIO.OUT)
-        # Set up PWM on SSR_PIN at 100Hz.
-        pwm = GPIO.PWM(SSR_PIN, 100)
-        pwm.start(0)  # Start with 0% duty cycle (heater off)
-    except Exception as e:
-        print("Error setting up GPIO:", e)
-        pwm = None
-else:
-    pwm = None
+# Global variable for PWM control
+pwm = None
+SSR_PIN = 17  # GPIO pin for SSR
 
-# Global variable to hold the current cycle id (None if no active cycle)
-current_cycle_id = None
+# Function to initialize GPIO (using RPi.GPIO)
+def init_gpio():
+    global pwm
+    if sys.platform.startswith("linux"):
+        try:
+            import RPi.GPIO as GPIO
+            GPIO.setwarnings(False)
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(SSR_PIN, GPIO.OUT)
+            pwm = GPIO.PWM(SSR_PIN, 100)  # 100Hz PWM frequency
+            pwm.start(0)  # Start with 0% duty cycle (heater off)
+            print("GPIO initialized successfully.")
+        except Exception as e:
+            print("Error setting up GPIO:", e)
+            pwm = None
+    else:
+        pwm = None
 
 # -------------------------
 # Cycle Management Functions
 # -------------------------
+current_cycle_id = None
+
 def start_new_cycle():
-    """Start a new heating cycle and return its ID."""
     global current_cycle_id
     conn = get_db()
     cur = conn.cursor()
@@ -75,7 +77,6 @@ def start_new_cycle():
     return current_cycle_id
 
 def end_current_cycle():
-    """Mark the current cycle as ended and purge old cycles beyond the latest 20."""
     global current_cycle_id
     if current_cycle_id is not None:
         conn = get_db()
@@ -88,10 +89,6 @@ def end_current_cycle():
         purge_old_cycles()
 
 def purge_old_cycles():
-    """
-    Purge old cycles so that only the last 20 completed cycles remain.
-    This deletes both cycles and their associated readings.
-    """
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
@@ -114,10 +111,6 @@ def purge_old_cycles():
 # Background Temperature Logger
 # -------------------------
 def temperature_logger():
-    """
-    Continuously reads the current temperature and, if a cycle is active,
-    writes the reading (including both actual and set temperatures) to the database.
-    """
     global current_cycle_id
     while True:
         current_temp = read_temperature()
@@ -165,7 +158,6 @@ timer_thread_instance.start()
 # -------------------------
 # PID Control for SSR Output (using RPi.GPIO)
 # -------------------------
-# PID parameters (adjust these for your oven)
 Kp = 1.0
 Ki = 0.1
 Kd = 0.05
@@ -174,11 +166,6 @@ last_error = 0.0
 pid_thread = None
 
 def pid_control_loop():
-    """
-    Runs a PID control loop that reads the current temperature,
-    compares it to the setpoint, and adjusts the PWM duty cycle for the SSR.
-    The LED on your HAT is active-high, so a high duty cycle should turn it on.
-    """
     global integral, last_error
     last_time = time.time()
     while config["oven_on"]:
@@ -257,7 +244,7 @@ def set_timer():
     global time_remaining, timer_running
     data = request.get_json()
     with timer_lock:
-        time_remaining = data.get("time", 0) * 60  # Convert minutes to seconds
+        time_remaining = data.get("time", 0) * 60
         timer_running = False
         config["timer_running"] = False
         config["time_remaining"] = int(time_remaining)
@@ -287,16 +274,10 @@ def current_temperature():
 
 @app.route('/temperature_graph')
 def temperature_graph():
-    """Page showing live current temperature history (last 2 hours)."""
     return render_template('current_temp_history.html')
 
 @app.route('/current_temp_history')
 def current_temp_history():
-    """
-    Return readings for the current cycle over the last 2 hours.
-    If no cycle is active, try to return data from the most recent cycle that ended within 2 hours.
-    Each record includes both actual and set temperatures.
-    """
     two_hours_ago = datetime.now() - timedelta(hours=2)
     cycle_id_to_use = current_cycle_id
     if cycle_id_to_use is None:
@@ -328,7 +309,7 @@ def current_temp_history():
     data = []
     for r in rows:
         data.append({
-            "x": int(r["ts"]) * 1000,  # milliseconds for Chart.js
+            "x": int(r["ts"]) * 1000,
             "y_actual": r["temperature"],
             "y_set": r["set_temperature"]
         })
@@ -336,7 +317,6 @@ def current_temp_history():
 
 @app.route('/cycles')
 def list_cycles():
-    """List the last 10 completed cycles."""
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
@@ -352,7 +332,6 @@ def list_cycles():
 
 @app.route('/cycles/<int:cycle_id>')
 def show_cycle(cycle_id):
-    """Display a graph of a selected past cycle."""
     return render_template('cycle_graph.html', cycle_id=cycle_id)
 
 @app.route('/cycles/<int:cycle_id>/data')
@@ -393,7 +372,7 @@ def test_pwm():
     def pwm_test():
         if pwm is not None:
             print("Forcing PWM to 100% duty for 10 seconds")
-            pwm.ChangeDutyCycle(100)  # 100% duty
+            pwm.ChangeDutyCycle(100)
             time.sleep(10)
             pwm.ChangeDutyCycle(0)
             print("PWM test complete")
@@ -401,4 +380,5 @@ def test_pwm():
     return "PWM test started"
 
 if __name__ == '__main__':
+    init_gpio()  # Initialize GPIO now (after all imports)
     app.run(host='0.0.0.0', port=5000, debug=True)
