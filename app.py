@@ -161,13 +161,15 @@ def toggle_light():
 @app.route('/power', methods=['POST'])
 def toggle_oven():
     global current_cycle_id
+    print("Received /power request")
     config["oven_on"] = not config.get("oven_on", False)
-    # When turning on, start a new cycle; when turning off, end it.
+    print(f"Setting oven_on to {config['oven_on']}")
     if config["oven_on"]:
         start_new_cycle()
     else:
         end_current_cycle()
     save_config(config)
+    print(f"Oven status now: {config['oven_on']}")
     return jsonify({"oven_on": config["oven_on"]})
 
 @app.route('/toggle_timer', methods=['POST'])
@@ -204,14 +206,14 @@ def get_timer():
     return jsonify({"timer_running": timer_running, "time_remaining": int(time_remaining)})
 
 @app.route('/set_temperature', methods=['POST'])
-def set_temperature():
+def set_temperature_endpoint():
     data = request.get_json()
     config["target_temperature"] = data.get("temperature", 350)
     save_config(config)
     return jsonify({"target_temperature": config["target_temperature"]})
 
 @app.route('/get_temperature', methods=['GET'])
-def get_temperature():
+def get_temperature_endpoint():
     return jsonify({"target_temperature": config["target_temperature"]})
 
 @app.route('/current_temperature', methods=['GET'])
@@ -237,7 +239,6 @@ def current_temp_history():
     two_hours_ago = datetime.now() - timedelta(hours=2)
     cycle_id_to_use = current_cycle_id
     if cycle_id_to_use is None:
-        # Get the most recent cycle that ended within the past 2 hours.
         conn = get_db()
         cur = conn.cursor()
         cur.execute("""
@@ -250,6 +251,7 @@ def current_temp_history():
         if row:
             cycle_id_to_use = row["id"]
     if cycle_id_to_use is None:
+        print("No cycle data available for current_temp_history")
         return jsonify([])
     conn = get_db()
     cur = conn.cursor()
@@ -261,6 +263,7 @@ def current_temp_history():
     """, (cycle_id_to_use, two_hours_ago))
     rows = cur.fetchall()
     conn.close()
+    print(f"current_temp_history: Found {len(rows)} readings for cycle {cycle_id_to_use}")
     data = []
     for r in rows:
         data.append({
@@ -303,6 +306,7 @@ def cycle_data(cycle_id):
     """, (cycle_id,))
     rows = cur.fetchall()
     conn.close()
+    print(f"Cycle {cycle_id} data: Found {len(rows)} readings")
     data = []
     for r in rows:
         data.append({

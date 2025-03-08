@@ -258,7 +258,9 @@
 
         // Oven Toggle
         $("#toggleOven").click(function() {
+            console.log("toggle oven clicked");
             $.post("/power", function(response) {
+                console.log("toggle oven response:", response);
                 $("#toggleOven").text(response.oven_on ? "Stop Oven" : "Start Oven");
                 $("#ovenStatus").text(response.oven_on ? "Running" : "Stopped");
             });
