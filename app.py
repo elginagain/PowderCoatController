@@ -41,6 +41,7 @@ init_db()
 if sys.platform.startswith("linux"):
     try:
         import RPi.GPIO as GPIO
+        GPIO.cleanup()  # Clean up any previous allocations
         GPIO.setmode(GPIO.BCM)
         SSR_PIN = 17  # Adjust this if needed
         GPIO.setup(SSR_PIN, GPIO.OUT)

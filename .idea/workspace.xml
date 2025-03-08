@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Inverted duty cycle on app.py to see if that fixes the pid output on pin 17 so it lights the test led on the hat.">
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Key Points&#10;&#10;    The PID loop now prints debugging messages and calls pwm.ChangeDutyCycle(duty_cycle) without inversion, because your LED is active‑high.&#10;    The /power endpoint starts the PID loop if the oven is turned on.&#10;    The application should be run with sudo python3 app.py to ensure GPIO access.&#10;    The rest of the code (cycle management, temperature logging, timer, routes) remains as before.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
     </list>
@@ -265,7 +265,15 @@
       <option name="project" value="LOCAL" />
       <updated>1741408286865</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="Key Points&#10;&#10;    The PID loop now prints debugging messages and calls pwm.ChangeDutyCycle(duty_cycle) without inversion, because your LED is active‑high.&#10;    The /power endpoint starts the PID loop if the oven is turned on.&#10;    The application should be run with sudo python3 app.py to ensure GPIO access.&#10;    The rest of the code (cycle management, temperature logging, timer, routes) remains as before.">
+      <option name="closed" value="true" />
+      <created>1741409035336</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1741409035336</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -282,6 +290,7 @@
     <MESSAGE value="Below is an updated version of your app.py that now integrates hardware control via GPIO for your SSR and starts a PID control loop when the oven is turned on. When you click the “Start Oven” button, the code will now begin a PID loop that reads the current temperature, compares it to the setpoint, computes a duty cycle, and then drives the SSR (via PWM on a GPIO pin) to control the heating elements.&#10;&#10;Make sure you have your wiring set up so that the SSR’s input is connected to the GPIO pin defined below (here we use BCM pin 17). This code assumes it’s running on a Raspberry Pi (it checks sys.platform) and will only attempt to use RPi.GPIO if on Linux.&#10;&#10;You can copy/paste this full file into your project (replacing your existing app.py). Then, when you click “Start Oven,” it will start a new cycle and a PID control thread will begin updating the SSR output.&#10;&#10;Explanation&#10;&#10;    GPIO/PWM Setup:&#10;    We initialize RPi.GPIO and set up a PWM output on pin 17 (adjust if needed). This controls your SSR.&#10;&#10;    PID Control Loop:&#10;    When the oven is turned on via the /power endpoint, we start a new cycle and then start a PID control thread (if one isn’t already running). The PID loop reads the temperature, computes an error relative to the setpoint, and updates the PWM duty cycle to modulate the SSR output.&#10;&#10;    /power Endpoint:&#10;    The /power endpoint toggles the oven state and starts or ends a cycle accordingly, and now also starts the PID control thread.&#10;&#10;    PID Parameters:&#10;    You can adjust Kp, Ki, and Kd as needed for your oven’s dynamics.&#10;&#10;    Thread Safety:&#10;    The PID control loop runs in its own thread and stops when config[&quot;oven_on&quot;] becomes false." />
     <MESSAGE value="added a test script to test the PWM output and figure out why the LED on pin 17 isn't lighting up to indicate the SSR is being triggered when the oven is on and below set point." />
     <MESSAGE value="Inverted duty cycle on app.py to see if that fixes the pid output on pin 17 so it lights the test led on the hat." />
-    <option name="LAST_COMMIT_MESSAGE" value="Inverted duty cycle on app.py to see if that fixes the pid output on pin 17 so it lights the test led on the hat." />
+    <MESSAGE value="Key Points&#10;&#10;    The PID loop now prints debugging messages and calls pwm.ChangeDutyCycle(duty_cycle) without inversion, because your LED is active‑high.&#10;    The /power endpoint starts the PID loop if the oven is turned on.&#10;    The application should be run with sudo python3 app.py to ensure GPIO access.&#10;    The rest of the code (cycle management, temperature logging, timer, routes) remains as before." />
+    <option name="LAST_COMMIT_MESSAGE" value="Key Points&#10;&#10;    The PID loop now prints debugging messages and calls pwm.ChangeDutyCycle(duty_cycle) without inversion, because your LED is active‑high.&#10;    The /power endpoint starts the PID loop if the oven is turned on.&#10;    The application should be run with sudo python3 app.py to ensure GPIO access.&#10;    The rest of the code (cycle management, temperature logging, timer, routes) remains as before." />
   </component>
 </project>
