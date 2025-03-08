@@ -41,13 +41,18 @@ init_db()
 if sys.platform.startswith("linux"):
     try:
         import RPi.GPIO as GPIO
-        GPIO.cleanup()  # Clean up any previous allocations
+        import atexit
+        GPIO.setwarnings(False)
+        # Register cleanup on exit.
+        atexit.register(GPIO.cleanup)
+        # Clean up any previous allocations.
+        GPIO.cleanup()
         GPIO.setmode(GPIO.BCM)
-        SSR_PIN = 17  # Adjust this if needed
+        SSR_PIN = 17  # Adjust this if needed.
         GPIO.setup(SSR_PIN, GPIO.OUT)
-        # Use a higher PWM frequency (100Hz) for SSR control.
+        # Use a PWM frequency of 100Hz for the SSR.
         pwm = GPIO.PWM(SSR_PIN, 100)
-        pwm.start(0)  # Start with 0% duty cycle
+        pwm.start(0)  # Start with 0% duty cycle.
     except Exception as e:
         print("Error setting up GPIO:", e)
         pwm = None

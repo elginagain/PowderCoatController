@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Key Points&#10;&#10;    The PID loop now prints debugging messages and calls pwm.ChangeDutyCycle(duty_cycle) without inversion, because your LED is active‑high.&#10;    The /power endpoint starts the PID loop if the oven is turned on.&#10;    The application should be run with sudo python3 app.py to ensure GPIO access.&#10;    The rest of the code (cycle management, temperature logging, timer, routes) remains as before.">
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="added GPIO.cleanup()  # Clean up any previous allocations">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
     </list>
@@ -273,7 +273,15 @@
       <option name="project" value="LOCAL" />
       <updated>1741409035336</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="added GPIO.cleanup()  # Clean up any previous allocations">
+      <option name="closed" value="true" />
+      <created>1741409558787</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1741409558787</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -291,6 +299,7 @@
     <MESSAGE value="added a test script to test the PWM output and figure out why the LED on pin 17 isn't lighting up to indicate the SSR is being triggered when the oven is on and below set point." />
     <MESSAGE value="Inverted duty cycle on app.py to see if that fixes the pid output on pin 17 so it lights the test led on the hat." />
     <MESSAGE value="Key Points&#10;&#10;    The PID loop now prints debugging messages and calls pwm.ChangeDutyCycle(duty_cycle) without inversion, because your LED is active‑high.&#10;    The /power endpoint starts the PID loop if the oven is turned on.&#10;    The application should be run with sudo python3 app.py to ensure GPIO access.&#10;    The rest of the code (cycle management, temperature logging, timer, routes) remains as before." />
-    <option name="LAST_COMMIT_MESSAGE" value="Key Points&#10;&#10;    The PID loop now prints debugging messages and calls pwm.ChangeDutyCycle(duty_cycle) without inversion, because your LED is active‑high.&#10;    The /power endpoint starts the PID loop if the oven is turned on.&#10;    The application should be run with sudo python3 app.py to ensure GPIO access.&#10;    The rest of the code (cycle management, temperature logging, timer, routes) remains as before." />
+    <MESSAGE value="added GPIO.cleanup()  # Clean up any previous allocations" />
+    <option name="LAST_COMMIT_MESSAGE" value="added GPIO.cleanup()  # Clean up any previous allocations" />
   </component>
 </project>
