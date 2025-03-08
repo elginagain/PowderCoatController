@@ -1,5 +1,5 @@
 import os
-# We are not forcing the use of /dev/mem so that RPi.GPIO will use /dev/gpiomem.
+# Do not force the use of /dev/mem so that RPi.GPIO uses /dev/gpiomem.
 # os.environ["GPIO_USE_DEV_MEM"] = "1"
 
 from flask import Flask, render_template, request, jsonify
@@ -38,34 +38,37 @@ config = load_config()
 # Initialize the database at startup.
 init_db()
 
-# -------------------------
-# RPi.GPIO Setup for SSR Control
-# -------------------------
-if sys.platform.startswith("linux"):
-    try:
-        import RPi.GPIO as GPIO
-        GPIO.setwarnings(False)
-        GPIO.setmode(GPIO.BCM)
-        SSR_PIN = 17  # Adjust if needed
-        GPIO.setup(SSR_PIN, GPIO.OUT)
-        # Set up PWM on SSR_PIN at 100Hz.
-        pwm = GPIO.PWM(SSR_PIN, 100)
-        pwm.start(0)  # Start with 0% duty cycle (heater off)
-        print("GPIO initialized successfully.")
-    except Exception as e:
-        print("Error setting up GPIO:", e)
-        pwm = None
-else:
-    pwm = None
+# Global variable for PWM and SSR pin
+pwm = None
+SSR_PIN = 17  # GPIO pin for SSR control
 
-# Global variable to hold the current cycle id (None if no active cycle)
-current_cycle_id = None
+# -------------------------
+# Function to Initialize GPIO using RPi.GPIO
+# -------------------------
+def init_gpio():
+    global pwm
+    if sys.platform.startswith("linux"):
+        try:
+            import RPi.GPIO as GPIO
+            GPIO.setwarnings(False)
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(SSR_PIN, GPIO.OUT)
+            # Set up PWM on SSR_PIN at 100Hz.
+            pwm = GPIO.PWM(SSR_PIN, 100)
+            pwm.start(0)  # Start with 0% duty cycle (heater off)
+            print("GPIO initialized successfully.")
+        except Exception as e:
+            print("Error setting up GPIO:", e)
+            pwm = None
+    else:
+        pwm = None
 
 # -------------------------
 # Cycle Management Functions
 # -------------------------
+current_cycle_id = None
+
 def start_new_cycle():
-    """Start a new heating cycle and return its ID."""
     global current_cycle_id
     conn = get_db()
     cur = conn.cursor()
@@ -77,7 +80,6 @@ def start_new_cycle():
     return current_cycle_id
 
 def end_current_cycle():
-    """Mark the current cycle as ended and purge old cycles beyond the latest 20."""
     global current_cycle_id
     if current_cycle_id is not None:
         conn = get_db()
@@ -90,10 +92,6 @@ def end_current_cycle():
         purge_old_cycles()
 
 def purge_old_cycles():
-    """
-    Purge old cycles so that only the last 20 completed cycles remain.
-    This deletes both cycles and their associated readings.
-    """
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
@@ -116,10 +114,6 @@ def purge_old_cycles():
 # Background Temperature Logger
 # -------------------------
 def temperature_logger():
-    """
-    Continuously reads the current temperature and, if a cycle is active,
-    writes the reading (including both actual and set temperatures) to the database.
-    """
     global current_cycle_id
     while True:
         current_temp = read_temperature()
@@ -167,7 +161,6 @@ timer_thread_instance.start()
 # -------------------------
 # PID Control for SSR Output (using RPi.GPIO)
 # -------------------------
-# PID parameters (adjust these for your oven)
 Kp = 1.0
 Ki = 0.1
 Kd = 0.05
@@ -176,14 +169,9 @@ last_error = 0.0
 pid_thread = None
 
 def pid_control_loop():
-    """
-    Runs a PID control loop that reads the current temperature,
-    compares it to the setpoint, and adjusts the PWM duty cycle for the SSR.
-    The LED on your HAT is active-high, so a high duty cycle should turn it on.
-    """
     global integral, last_error
     last_time = time.time()
-    max_integral = 500  # Anti-windup limit; adjust as needed
+    max_integral = 500  # Anti-windup limit
     while config["oven_on"]:
         current_temp = read_temperature()
         setpoint = config["target_temperature"]
@@ -191,11 +179,10 @@ def pid_control_loop():
         current_time = time.time()
         dt = current_time - last_time if (current_time - last_time) > 0 else 1
 
-        # Update the integral term and clamp it.
         integral += error * dt
+        # Clamp the integral term
         integral = max(min(integral, max_integral), -max_integral)
-
-        # Optionally reset the integral if error is negative (uncomment if desired):
+        # Optional: Reset integral if error is negative (temperature above setpoint)
         # if error < 0:
         #     integral = 0
 
@@ -268,7 +255,7 @@ def set_timer():
     global time_remaining, timer_running
     data = request.get_json()
     with timer_lock:
-        time_remaining = data.get("time", 0) * 60  # Convert minutes to seconds
+        time_remaining = data.get("time", 0) * 60
         timer_running = False
         config["timer_running"] = False
         config["time_remaining"] = int(time_remaining)
@@ -333,7 +320,7 @@ def current_temp_history():
     data = []
     for r in rows:
         data.append({
-            "x": int(r["ts"]) * 1000,  # milliseconds for Chart.js
+            "x": int(r["ts"]) * 1000,
             "y_actual": r["temperature"],
             "y_set": r["set_temperature"]
         })
@@ -404,6 +391,5 @@ def test_pwm():
     return "PWM test started"
 
 if __name__ == '__main__':
-    # Initialize GPIO after all imports to avoid interference from module reloads.
-    init_gpio()  # This function was defined earlier in our version; if not, you can inline the GPIO setup code here.
+    init_gpio()  # Initialize GPIO now
     app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
