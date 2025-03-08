@@ -37,7 +37,16 @@
   <a href="/" class="button">Back to Dashboard</a>
   <a href="/cycles" class="button">View Historical Cycles</a>
   <script>
-    const ctx = document.getElementById('tempChart').getContext('2d');
+    console.log("Current temp history script loaded");
+
+    // Get the canvas element; if not found, log an error.
+    const canvas = document.getElementById('tempChart');
+    if (!canvas) {
+      console.error("tempChart canvas not found!");
+    }
+    const ctx = canvas.getContext('2d');
+
+    // Create the Chart.js line chart with two datasets.
     const tempChart = new Chart(ctx, {
       type: 'line',
       data: {
@@ -79,22 +88,26 @@
       }
     });
 
+    // Function to fetch temperature history data.
     function fetchCurrentHistory() {
+      console.log("Fetching current temperature history...");
       fetch('/current_temp_history')
         .then(response => response.json())
         .then(data => {
+          console.log("Received data:", data);
+          // Split data into actual temperature and set temperature datasets.
           const data_actual = data.map(d => ({ x: d.x, y: d.y_actual }));
           const data_set = data.map(d => ({ x: d.x, y: d.y_set }));
           tempChart.data.datasets[0].data = data_actual;
           tempChart.data.datasets[1].data = data_set;
           tempChart.update();
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error("Error fetching current temperature history:", error));
     }
 
-    // Update every 5 seconds.
-    setInterval(fetchCurrentHistory, 5000);
+    // Fetch data immediately and then every 5 seconds.
     fetchCurrentHistory();
+    setInterval(fetchCurrentHistory, 5000);
   </script>
 </body>
 </html>
