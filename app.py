@@ -1,5 +1,7 @@
 import os
-os.environ["GPIO_USE_DEV_MEM"] = "1"  # Force RPi.GPIO to use /dev/mem
+# For pigpio, we don't need to set GPIO_USE_DEV_MEM.
+# If desired, you can leave it, but it's not used with pigpio.
+# os.environ["GPIO_USE_DEV_MEM"] = "1"
 
 from flask import Flask, render_template, request, jsonify
 import os
@@ -39,27 +41,24 @@ config = load_config()
 init_db()
 
 # -------------------------
-# GPIO and PWM Setup for SSR Control (only on Linux, e.g., Raspberry Pi)
+# pigpio Setup for SSR Control (works on Debian-based systems)
 # -------------------------
 if sys.platform.startswith("linux"):
     try:
-        import RPi.GPIO as GPIO
-        import atexit
-        GPIO.setwarnings(False)
-        # Register cleanup on exit.
-        atexit.register(GPIO.cleanup)
-        # Do NOT call GPIO.cleanup() immediately here.
-        GPIO.setmode(GPIO.BCM)
-        SSR_PIN = 17  # Adjust this if needed
-        GPIO.setup(SSR_PIN, GPIO.OUT)
-        # Use a PWM frequency of 100Hz for SSR control.
-        pwm = GPIO.PWM(SSR_PIN, 100)
-        pwm.start(0)  # Start with 0% duty cycle.
+        import pigpio
+        pi = pigpio.pi()
+        if not pi.connected:
+            raise Exception("pigpio daemon not running or not connected")
+        SSR_PIN = 17  # Adjust as needed
+        # Set PWM frequency to 100Hz.
+        pi.set_PWM_frequency(SSR_PIN, 100)
+        # Initialize with 0 duty cycle (LED off)
+        pi.set_PWM_dutycycle(SSR_PIN, 0)
     except Exception as e:
-        print("Error setting up GPIO:", e)
-        pwm = None
+        print("Error setting up pigpio:", e)
+        pi = None
 else:
-    pwm = None
+    pi = None
 
 # Global variable to hold the current cycle id (None if no active cycle)
 current_cycle_id = None
@@ -168,7 +167,7 @@ timer_thread_instance = threading.Thread(target=timer_thread, daemon=True)
 timer_thread_instance.start()
 
 # -------------------------
-# PID Control for SSR Output
+# PID Control for SSR Output (using pigpio)
 # -------------------------
 # PID parameters (adjust these for your oven)
 Kp = 1.0
@@ -197,14 +196,16 @@ def pid_control_loop():
         output = Kp * error + Ki * integral + Kd * derivative
         duty_cycle = max(0, min(100, output))
         print(f"PID: setpoint={setpoint}, current={current_temp:.2f}, error={error:.2f}, duty={duty_cycle:.2f}")
-        if pwm is not None:
-            print(f"Calling pwm.ChangeDutyCycle({duty_cycle})")
-            pwm.ChangeDutyCycle(duty_cycle)
+        if pi is not None:
+            # pigpio duty cycle range is 0-255
+            pigpio_duty = int((duty_cycle / 100.0) * 255)
+            print(f"Calling pi.set_PWM_dutycycle({SSR_PIN}, {pigpio_duty})")
+            pi.set_PWM_dutycycle(SSR_PIN, pigpio_duty)
         last_error = error
         last_time = current_time
         time.sleep(1)
-    if pwm is not None:
-        pwm.ChangeDutyCycle(0)
+    if pi is not None:
+        pi.set_PWM_dutycycle(SSR_PIN, 0)
     print("PID control loop ended.")
 
 # -------------------------
@@ -391,16 +392,16 @@ def status():
     })
 
 # -------------------------
-# New Route for PWM Test
+# New Route for PWM Test (using pigpio)
 # -------------------------
 @app.route('/test_pwm', methods=['GET'])
 def test_pwm():
     def pwm_test():
-        if pwm is not None:
+        if pi is not None:
             print("Forcing PWM to 100% duty for 10 seconds")
-            pwm.ChangeDutyCycle(100)
+            pi.set_PWM_dutycycle(SSR_PIN, 255)  # 100% duty (255 on pigpio)
             time.sleep(10)
-            pwm.ChangeDutyCycle(0)
+            pi.set_PWM_dutycycle(SSR_PIN, 0)
             print("PWM test complete")
     threading.Thread(target=pwm_test, daemon=True).start()
     return "PWM test started"
