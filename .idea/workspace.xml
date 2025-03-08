@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Added import os&#10;os.environ[&quot;GPIO_USE_DEV_MEM&quot;] = &quot;1&quot;  # Force RPi.GPIO to use /dev/mem&#10;&#10;Since you’re running Debian Bookworm instead of Raspberry Pi OS, the /dev/gpiomem device isn’t being created by your kernel. RPi.GPIO normally uses /dev/gpiomem on Raspberry Pi OS, but on other distributions, you’ll need to force it to use /dev/mem instead. (Be aware that using /dev/mem is less secure, so you should only run this code in a controlled environment.)&#10;&#10;One common workaround is to set the environment variable GPIO_USE_DEV_MEM to &quot;1&quot; before RPi.GPIO is imported. This tells RPi.GPIO to use /dev/mem.">
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Below is a complete updated version of your app.py that replaces RPi.GPIO with the pigpio library for GPIO/PWM control. This approach works more reliably on Debian‑based systems (like Raspberry Pi OS Lite 32‑bit on your hardware) and avoids the “GPIO not allocated” error. Note that you must have pigpiod (the pigpio daemon) running for this code to work. You can start it with:">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -298,7 +297,23 @@
       <option name="project" value="LOCAL" />
       <updated>1741411522071</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="Below is an updated full version of your app.py with one key change: the immediate call to GPIO.cleanup() at startup has been removed. (We’re still registering cleanup via atexit.) In some cases, calling GPIO.cleanup() right away can interfere with RPi.GPIO’s ability to determine the SOC peripheral base address.">
+      <option name="closed" value="true" />
+      <created>1741458528469</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1741458528469</updated>
+    </task>
+    <task id="LOCAL-00027" summary="Below is a complete updated version of your app.py that replaces RPi.GPIO with the pigpio library for GPIO/PWM control. This approach works more reliably on Debian‑based systems (like Raspberry Pi OS Lite 32‑bit on your hardware) and avoids the “GPIO not allocated” error. Note that you must have pigpiod (the pigpio daemon) running for this code to work. You can start it with:">
+      <option name="closed" value="true" />
+      <created>1741458856167</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1741458856167</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -319,6 +334,8 @@
     <MESSAGE value="added GPIO.cleanup()  # Clean up any previous allocations" />
     <MESSAGE value="elow is an updated version of the GPIO setup section for your app.py. This version does a few things to help resolve the &quot;GPIO not allocated&quot; error:&#10;&#10;    Disables warnings: Some issues occur because of leftover warnings or previous allocations.&#10;    Registers a cleanup handler via atexit: This ensures that GPIO.cleanup() is always called on exit.&#10;    Attempts a cleanup before re‑initializing: This can help free any resources left over from previous runs.&#10;    Uses GPIO.setmode(GPIO.BCM) explicitly: To ensure the board is set to BCM mode." />
     <MESSAGE value="Added import os&#10;os.environ[&quot;GPIO_USE_DEV_MEM&quot;] = &quot;1&quot;  # Force RPi.GPIO to use /dev/mem&#10;&#10;Since you’re running Debian Bookworm instead of Raspberry Pi OS, the /dev/gpiomem device isn’t being created by your kernel. RPi.GPIO normally uses /dev/gpiomem on Raspberry Pi OS, but on other distributions, you’ll need to force it to use /dev/mem instead. (Be aware that using /dev/mem is less secure, so you should only run this code in a controlled environment.)&#10;&#10;One common workaround is to set the environment variable GPIO_USE_DEV_MEM to &quot;1&quot; before RPi.GPIO is imported. This tells RPi.GPIO to use /dev/mem." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added import os&#10;os.environ[&quot;GPIO_USE_DEV_MEM&quot;] = &quot;1&quot;  # Force RPi.GPIO to use /dev/mem&#10;&#10;Since you’re running Debian Bookworm instead of Raspberry Pi OS, the /dev/gpiomem device isn’t being created by your kernel. RPi.GPIO normally uses /dev/gpiomem on Raspberry Pi OS, but on other distributions, you’ll need to force it to use /dev/mem instead. (Be aware that using /dev/mem is less secure, so you should only run this code in a controlled environment.)&#10;&#10;One common workaround is to set the environment variable GPIO_USE_DEV_MEM to &quot;1&quot; before RPi.GPIO is imported. This tells RPi.GPIO to use /dev/mem." />
+    <MESSAGE value="Below is an updated full version of your app.py with one key change: the immediate call to GPIO.cleanup() at startup has been removed. (We’re still registering cleanup via atexit.) In some cases, calling GPIO.cleanup() right away can interfere with RPi.GPIO’s ability to determine the SOC peripheral base address." />
+    <MESSAGE value="Below is a complete updated version of your app.py that replaces RPi.GPIO with the pigpio library for GPIO/PWM control. This approach works more reliably on Debian‑based systems (like Raspberry Pi OS Lite 32‑bit on your hardware) and avoids the “GPIO not allocated” error. Note that you must have pigpiod (the pigpio daemon) running for this code to work. You can start it with:" />
+    <option name="LAST_COMMIT_MESSAGE" value="Below is a complete updated version of your app.py that replaces RPi.GPIO with the pigpio library for GPIO/PWM control. This approach works more reliably on Debian‑based systems (like Raspberry Pi OS Lite 32‑bit on your hardware) and avoids the “GPIO not allocated” error. Note that you must have pigpiod (the pigpio daemon) running for this code to work. You can start it with:" />
   </component>
 </project>

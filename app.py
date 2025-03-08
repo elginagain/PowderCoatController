@@ -1,10 +1,7 @@
 import os
-# For pigpio, we don't need to set GPIO_USE_DEV_MEM.
-# If desired, you can leave it, but it's not used with pigpio.
-# os.environ["GPIO_USE_DEV_MEM"] = "1"
+os.environ["GPIO_USE_DEV_MEM"] = "1"  # This is still set, though pigpio in soft mode won't use it
 
 from flask import Flask, render_template, request, jsonify
-import os
 import json
 import time
 import threading
@@ -41,18 +38,19 @@ config = load_config()
 init_db()
 
 # -------------------------
-# pigpio Setup for SSR Control (works on Debian-based systems)
+# pigpio Setup for SSR Control (using soft mode)
 # -------------------------
 if sys.platform.startswith("linux"):
     try:
         import pigpio
-        pi = pigpio.pi()
+        # Instead of connecting to the daemon, we use 'soft' mode so pigpio works on non‑Raspberry Pi OS
+        pi = pigpio.pi('soft')
         if not pi.connected:
-            raise Exception("pigpio daemon not running or not connected")
-        SSR_PIN = 17  # Adjust as needed
-        # Set PWM frequency to 100Hz.
+            raise Exception("pigpio in soft mode not connected")
+        SSR_PIN = 17  # Adjust this if needed
+        # Set PWM frequency to 100Hz (pigpio soft mode will simulate this)
         pi.set_PWM_frequency(SSR_PIN, 100)
-        # Initialize with 0 duty cycle (LED off)
+        # Initialize with 0 duty cycle (0 out of 255)
         pi.set_PWM_dutycycle(SSR_PIN, 0)
     except Exception as e:
         print("Error setting up pigpio:", e)
@@ -197,7 +195,7 @@ def pid_control_loop():
         duty_cycle = max(0, min(100, output))
         print(f"PID: setpoint={setpoint}, current={current_temp:.2f}, error={error:.2f}, duty={duty_cycle:.2f}")
         if pi is not None:
-            # pigpio duty cycle range is 0-255
+            # pigpio duty cycle range is 0-255; convert accordingly.
             pigpio_duty = int((duty_cycle / 100.0) * 255)
             print(f"Calling pi.set_PWM_dutycycle({SSR_PIN}, {pigpio_duty})")
             pi.set_PWM_dutycycle(SSR_PIN, pigpio_duty)
@@ -399,7 +397,7 @@ def test_pwm():
     def pwm_test():
         if pi is not None:
             print("Forcing PWM to 100% duty for 10 seconds")
-            pi.set_PWM_dutycycle(SSR_PIN, 255)  # 100% duty (255 on pigpio)
+            pi.set_PWM_dutycycle(SSR_PIN, 255)  # 100% duty (pigpio uses 0-255)
             time.sleep(10)
             pi.set_PWM_dutycycle(SSR_PIN, 0)
             print("PWM test complete")
