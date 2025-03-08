@@ -6,6 +6,7 @@ import threading
 from datetime import datetime, timedelta
 from temperature_sensor import read_temperature  # Your sensor reading function
 from db import get_db, init_db  # Database helper functions
+import sys
 
 app = Flask(__name__)
 
@@ -33,6 +34,23 @@ config = load_config()
 
 # Initialize the database at startup.
 init_db()
+
+# -------------------------
+# GPIO and PWM Setup for SSR Control (only on Linux, e.g., Raspberry Pi)
+# -------------------------
+if sys.platform.startswith("linux"):
+    try:
+        import RPi.GPIO as GPIO
+        GPIO.setmode(GPIO.BCM)
+        SSR_PIN = 17  # Adjust this pin number based on your wiring
+        GPIO.setup(SSR_PIN, GPIO.OUT)
+        pwm = GPIO.PWM(SSR_PIN, 1)  # Frequency = 1Hz (adjust as needed)
+        pwm.start(0)  # Start with 0% duty cycle (heater off)
+    except Exception as e:
+        print("Error setting up GPIO:", e)
+        pwm = None
+else:
+    pwm = None
 
 # Global variable to hold the current cycle id (None if no active cycle)
 current_cycle_id = None
@@ -99,7 +117,6 @@ def temperature_logger():
     global current_cycle_id
     while True:
         current_temp = read_temperature()
-        # If the oven is on and a cycle is active, log the reading.
         if config["oven_on"] and current_cycle_id is not None:
             conn = get_db()
             cur = conn.cursor()
@@ -142,6 +159,45 @@ timer_thread_instance = threading.Thread(target=timer_thread, daemon=True)
 timer_thread_instance.start()
 
 # -------------------------
+# PID Control (SSR Output) Setup
+# -------------------------
+# PID parameters (adjust as needed)
+Kp = 1.0
+Ki = 0.1
+Kd = 0.05
+integral = 0.0
+last_error = 0.0
+pid_thread = None
+
+def pid_control_loop():
+    """
+    Runs a PID control loop that reads the current temperature,
+    compares it to the setpoint, and adjusts the PWM duty cycle for the SSR.
+    """
+    global integral, last_error
+    last_time = time.time()
+    while config["oven_on"]:
+        current_temp = read_temperature()
+        setpoint = config["target_temperature"]
+        error = setpoint - current_temp
+        current_time = time.time()
+        dt = current_time - last_time if (current_time - last_time) > 0 else 1
+        integral += error * dt
+        derivative = (error - last_error) / dt
+        output = Kp * error + Ki * integral + Kd * derivative
+        duty_cycle = max(0, min(100, output))
+        if pwm is not None:
+            pwm.ChangeDutyCycle(duty_cycle)
+        print(f"PID: setpoint={setpoint}, current={current_temp:.2f}, error={error:.2f}, duty={duty_cycle:.2f}")
+        last_error = error
+        last_time = current_time
+        time.sleep(1)
+    # When oven is turned off, reset PWM duty cycle
+    if pwm is not None:
+        pwm.ChangeDutyCycle(0)
+    print("PID control loop ended.")
+
+# -------------------------
 # Routes (Existing and New)
 # -------------------------
 @app.route('/')
@@ -160,12 +216,16 @@ def toggle_light():
 
 @app.route('/power', methods=['POST'])
 def toggle_oven():
-    global current_cycle_id
+    global current_cycle_id, pid_thread
     print("Received /power request")
     config["oven_on"] = not config.get("oven_on", False)
     print(f"Setting oven_on to {config['oven_on']}")
     if config["oven_on"]:
         start_new_cycle()
+        # Start the PID control loop if not already running
+        if pid_thread is None or not pid_thread.is_alive():
+            pid_thread = threading.Thread(target=pid_control_loop, daemon=True)
+            pid_thread.start()
     else:
         end_current_cycle()
     save_config(config)
