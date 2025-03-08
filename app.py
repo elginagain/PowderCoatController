@@ -42,10 +42,11 @@ if sys.platform.startswith("linux"):
     try:
         import RPi.GPIO as GPIO
         GPIO.setmode(GPIO.BCM)
-        SSR_PIN = 17  # Adjust this pin number based on your wiring
+        SSR_PIN = 17  # Adjust this if needed
         GPIO.setup(SSR_PIN, GPIO.OUT)
-        pwm = GPIO.PWM(SSR_PIN, 1)  # Frequency = 1Hz (adjust as needed)
-        pwm.start(0)  # Start with 0% duty cycle (heater off)
+        # Use a higher PWM frequency (100Hz) for SSR control.
+        pwm = GPIO.PWM(SSR_PIN, 100)
+        pwm.start(0)  # Start with 0% duty cycle
     except Exception as e:
         print("Error setting up GPIO:", e)
         pwm = None
@@ -159,9 +160,9 @@ timer_thread_instance = threading.Thread(target=timer_thread, daemon=True)
 timer_thread_instance.start()
 
 # -------------------------
-# PID Control (SSR Output) Setup
+# PID Control for SSR Output
 # -------------------------
-# PID parameters (adjust as needed)
+# PID parameters (adjust these for your oven)
 Kp = 1.0
 Ki = 0.1
 Kd = 0.05
@@ -192,7 +193,6 @@ def pid_control_loop():
         last_error = error
         last_time = current_time
         time.sleep(1)
-    # When oven is turned off, reset PWM duty cycle
     if pwm is not None:
         pwm.ChangeDutyCycle(0)
     print("PID control loop ended.")
@@ -222,7 +222,6 @@ def toggle_oven():
     print(f"Setting oven_on to {config['oven_on']}")
     if config["oven_on"]:
         start_new_cycle()
-        # Start the PID control loop if not already running
         if pid_thread is None or not pid_thread.is_alive():
             pid_thread = threading.Thread(target=pid_control_loop, daemon=True)
             pid_thread.start()
@@ -281,9 +280,6 @@ def current_temperature():
     temp = read_temperature()
     return jsonify({"current_temperature": temp})
 
-# -------------------------
-# New Routes for Graphing and Cycle Data
-# -------------------------
 @app.route('/temperature_graph')
 def temperature_graph():
     """Page showing live current temperature history (last 2 hours)."""
