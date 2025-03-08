@@ -174,6 +174,7 @@ def pid_control_loop():
     """
     Runs a PID control loop that reads the current temperature,
     compares it to the setpoint, and adjusts the PWM duty cycle for the SSR.
+    The LED on your HAT is active-high, so a high duty cycle should turn it on.
     """
     global integral, last_error
     last_time = time.time()
@@ -187,11 +188,10 @@ def pid_control_loop():
         derivative = (error - last_error) / dt
         output = Kp * error + Ki * integral + Kd * derivative
         duty_cycle = max(0, min(100, output))
-        # Invert duty cycle if your LED (and SSR input) is active low:
-        inverted_duty = 100 - duty_cycle
-        if pwm is not None:
-            pwm.ChangeDutyCycle(duty_cycle)
         print(f"PID: setpoint={setpoint}, current={current_temp:.2f}, error={error:.2f}, duty={duty_cycle:.2f}")
+        if pwm is not None:
+            print(f"Calling pwm.ChangeDutyCycle({duty_cycle})")
+            pwm.ChangeDutyCycle(duty_cycle)
         last_error = error
         last_time = current_time
         time.sleep(1)
