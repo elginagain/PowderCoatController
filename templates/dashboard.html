@@ -230,7 +230,23 @@
         let timerSeconds = 0;
         let timerInterval;
 
-        // Function to update current sensor temperature
+        // -------------------------------------------------
+        // 1) On page load, fetch the target (set) temperature
+        // -------------------------------------------------
+        $.ajax({
+            url: '/get_temperature',
+            method: 'GET',
+            success: function(data) {
+                $("#setTemp").text(data.target_temperature);
+            },
+            error: function() {
+                console.error("Failed to fetch target temperature");
+            }
+        });
+
+        // -------------------------------------------------
+        // 2) Update current sensor temperature (every second)
+        // -------------------------------------------------
         function updateCurrentTemp() {
             $.ajax({
                 url: '/current_temperature',
@@ -246,7 +262,9 @@
         setInterval(updateCurrentTemp, 1000);
         updateCurrentTemp();
 
-        // Function to update oven status from the server
+        // -------------------------------------------------
+        // 3) Fetch oven status from the server (every 5 sec)
+        // -------------------------------------------------
         function updateOvenStatus() {
             $.ajax({
                 url: '/status',
@@ -260,18 +278,21 @@
                 }
             });
         }
-        // Call updateOvenStatus on page load and every 5 seconds.
         updateOvenStatus();
         setInterval(updateOvenStatus, 5000);
 
-        // Light Toggle
+        // -------------------------------------------------
+        // 4) Light Toggle
+        // -------------------------------------------------
         $("#toggleLight").click(function() {
             $.post("/toggle_light", function(response) {
                 $("#toggleLight").text(response.light_on ? "💡" : "🔆");
             });
         });
 
-        // Oven Toggle
+        // -------------------------------------------------
+        // 5) Oven Toggle
+        // -------------------------------------------------
         $("#toggleOven").click(function() {
             console.log("toggle oven clicked");
             $.post("/power", function(response) {
@@ -281,7 +302,9 @@
             });
         });
 
-        // Timer Start/Stop
+        // -------------------------------------------------
+        // 6) Timer Start/Stop
+        // -------------------------------------------------
         $("#toggleTimer").click(function() {
             if (timerRunning) {
                 clearInterval(timerInterval);
@@ -314,9 +337,11 @@
             );
         }
 
-        // Timer Increase/Decrease
+        // -------------------------------------------------
+        // 7) Timer Increase/Decrease
+        // -------------------------------------------------
         $("#increaseTime").click(function() {
-            timerSeconds += 300;
+            timerSeconds += 300; // 5 minutes
             updateTimerDisplay();
         });
         $("#decreaseTime").click(function() {
@@ -326,7 +351,9 @@
             }
         });
 
-        // Temperature Increase/Decrease with proper JSON call
+        // -------------------------------------------------
+        // 8) Temperature Increase/Decrease with JSON update
+        // -------------------------------------------------
         $("#increaseTemp").click(function() {
             let temp = parseInt($("#setTemp").text()) || 0;
             temp += 25;
@@ -356,7 +383,9 @@
             });
         }
 
-        // Keypad Handlers
+        // -------------------------------------------------
+        // 9) Keypad Handlers (for setTemp and setTimer)
+        // -------------------------------------------------
         $(".temp-set, .timer-set").click(function() {
             $("#keypad").fadeIn();
             $("#keypad").data("target", this);
