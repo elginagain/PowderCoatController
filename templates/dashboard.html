@@ -2,18 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- Fixed width viewport to simulate 800x480 -->
+  <!-- Fixed width viewport for 800x480 -->
   <meta name="viewport" content="width=800, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Oven Dashboard</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <!-- Optional: Chart.js and its zoom plugin if needed -->
+  <!-- Optional: Chart.js and zoom plugin if needed -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
   <style>
     /* Global Styles */
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       padding: 0;
@@ -30,27 +28,45 @@
     }
     header {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
       padding: 5px 0;
+      position: relative;
     }
     header h1 {
       font-size: 28px;
       margin: 0;
     }
+    /* Settings gear in top-right corner */
     #openSettings {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 28px;
       background: none;
       border: none;
-      font-size: 28px;
       color: #eee;
       cursor: pointer;
+      z-index: 100;
     }
-    /* Grid Layout for Controls */
+    /* Light toggle moved to top-left without taking vertical space */
+    #toggleLight {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      font-size: 28px;
+      background: none;
+      border: none;
+      color: #eee;
+      cursor: pointer;
+      z-index: 100;
+    }
+    /* Grid layout for the main controls */
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-gap: 10px;
-      margin-top: 10px;
+      margin-top: 50px; /* Leave space for header and top buttons */
     }
     .panel {
       background: #1e1e1e;
@@ -94,13 +110,9 @@
       cursor: pointer;
       margin-top: 5px;
     }
-    .button:hover {
-      background: #555;
-    }
+    .button:hover { background: #555; }
     /* Timer Panel Specific */
-    .timer-panel {
-      grid-column: span 2;
-    }
+    .timer-panel { grid-column: span 2; }
     .timer-display {
       font-size: 36px;
       padding: 5px;
@@ -119,7 +131,7 @@
       border: 2px solid #444;
       padding: 10px;
       border-radius: 8px;
-      z-index: 1000;
+      z-index: 200;
     }
     .keypad button {
       font-size: 22px;
@@ -131,9 +143,7 @@
       color: #eee;
       cursor: pointer;
     }
-    .keypad button:hover {
-      background: #444;
-    }
+    .keypad button:hover { background: #444; }
   </style>
 </head>
 <body>
@@ -141,14 +151,9 @@
     <header>
       <h1>Oven Control</h1>
       <button id="openSettings" onclick="location.href='/settings'">⚙️</button>
+      <button id="toggleLight">🔆</button>
     </header>
 
-    <!-- Light Toggle Button -->
-    <div style="text-align:center; margin: 5px 0;">
-      <button id="toggleLight" class="button">🔆</button>
-    </div>
-
-    <!-- Grid Layout for Temperature Controls -->
     <div class="grid">
       <!-- Set Temperature Panel -->
       <div class="panel">
@@ -214,7 +219,7 @@
       let timerSeconds = 0;
       let timerInterval;
 
-      // 1) On page load, fetch target temperature
+      // Fetch target temperature on load
       $.ajax({
           url: '/get_temperature',
           method: 'GET',
@@ -226,7 +231,7 @@
           }
       });
 
-      // 2) Update current temperature every second
+      // Update current temperature every second
       function updateCurrentTemp() {
           $.ajax({
               url: '/current_temperature',
@@ -242,7 +247,7 @@
       setInterval(updateCurrentTemp, 1000);
       updateCurrentTemp();
 
-      // 3) Fetch oven status every 5 seconds
+      // Fetch oven status every 5 seconds
       function updateOvenStatus() {
           $.ajax({
               url: '/status',
@@ -259,14 +264,14 @@
       updateOvenStatus();
       setInterval(updateOvenStatus, 5000);
 
-      // 4) Light Toggle
+      // Light Toggle
       $("#toggleLight").click(function() {
           $.post("/toggle_light", function(response) {
               $("#toggleLight").text(response.light_on ? "💡" : "🔆");
           });
       });
 
-      // 5) Oven Toggle
+      // Oven Toggle
       $("#toggleOven").click(function() {
           $.post("/power", function(response) {
               $("#toggleOven").text(response.oven_on ? "Stop Oven" : "Start Oven");
@@ -274,7 +279,7 @@
           });
       });
 
-      // 6) Timer Start/Stop
+      // Timer Start/Stop
       $("#toggleTimer").click(function() {
           if (timerRunning) {
               clearInterval(timerInterval);
@@ -307,7 +312,7 @@
           );
       }
 
-      // 7) Timer Increase/Decrease
+      // Timer Increase/Decrease
       $("#increaseTime").click(function() {
           timerSeconds += 300; // 5 minutes
           updateTimerDisplay();
@@ -319,7 +324,7 @@
           }
       });
 
-      // 8) Temperature Increase/Decrease with JSON update
+      // Temperature Increase/Decrease with JSON update
       $("#increaseTemp").click(function() {
           let temp = parseInt($("#setTemp").text()) || 0;
           temp += 25;
@@ -349,7 +354,7 @@
           });
       }
 
-      // 9) Keypad Handlers for setTemp and setTimer
+      // Keypad Handlers
       $(".temp-set, .timer-set").click(function() {
           $("#keypad").fadeIn();
           $("#keypad").data("target", this);
