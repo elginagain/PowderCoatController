@@ -182,9 +182,6 @@ def pid_control_loop():
         integral += error * dt
         # Clamp the integral term
         integral = max(min(integral, max_integral), -max_integral)
-        # Optional: Reset integral if error is negative (temperature above setpoint)
-        # if error < 0:
-        #     integral = 0
 
         derivative = (error - last_error) / dt
         output = Kp * error + Ki * integral + Kd * derivative
@@ -304,7 +301,6 @@ def current_temp_history():
         if row:
             cycle_id_to_use = row["id"]
     if cycle_id_to_use is None:
-        # No cycle data available; return a dummy data point
         now = datetime.now()
         dummy = [{
             "x": int(now.timestamp() * 1000),
@@ -315,8 +311,9 @@ def current_temp_history():
         return jsonify(dummy)
     conn = get_db()
     cur = conn.cursor()
+    # Use julianday() to convert timestamp to Unix epoch seconds
     cur.execute("""
-        SELECT strftime('%s', timestamp) AS ts, temperature, set_temperature
+        SELECT CAST((julianday(timestamp) - 2440587.5)*86400 AS INTEGER) AS ts, temperature, set_temperature
         FROM readings
         WHERE cycle_id = ? AND timestamp >= ?
         ORDER BY timestamp ASC
@@ -333,7 +330,6 @@ def current_temp_history():
         })
     return jsonify(data)
 
-
 @app.route('/cycles')
 def list_cycles():
     conn = get_db()
@@ -349,9 +345,6 @@ def list_cycles():
     conn.close()
     return render_template('cycles.html', cycles=cycles)
 
-# -------------------------
-# Modified Route: Historical Cycle Graph
-# -------------------------
 @app.route('/cycles/<int:cycle_id>')
 def show_cycle(cycle_id):
     conn = get_db()
@@ -360,9 +353,7 @@ def show_cycle(cycle_id):
     row = cur.fetchone()
     conn.close()
     if row:
-        # Use end_time if available; otherwise, use start_time
         dt = row["end_time"] if row["end_time"] else row["start_time"]
-        # If dt is a string, attempt to parse it
         if isinstance(dt, str):
             try:
                 dt = datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
@@ -378,8 +369,9 @@ def show_cycle(cycle_id):
 def cycle_data(cycle_id):
     conn = get_db()
     cur = conn.cursor()
+    # Use julianday() to convert timestamp to epoch seconds
     cur.execute("""
-        SELECT strftime('%s', timestamp) AS ts, temperature, set_temperature
+        SELECT CAST((julianday(timestamp) - 2440587.5)*86400 AS INTEGER) AS ts, temperature, set_temperature
         FROM readings
         WHERE cycle_id = ?
         ORDER BY timestamp ASC
@@ -404,9 +396,6 @@ def status():
          "time_remaining": int(time_remaining)
     })
 
-# -------------------------
-# New Route for PWM Test (using RPi.GPIO)
-# -------------------------
 @app.route('/test_pwm', methods=['GET'])
 def test_pwm():
     def pwm_test():

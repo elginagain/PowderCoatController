@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <title>Current Temperature History</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+  <!-- Use a stable version of the plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1"></script>
   <style>
     body {
       background-color: #222;
@@ -27,9 +28,8 @@
       background: #333;
       padding: 10px;
       border-radius: 8px;
-      /* Force a fixed height so that Chart.js draws axes even with no data */
       width: 100%;
-      height: 300px;
+      height: 300px; /* fixed height so axes show */
     }
     .date-label {
       margin-top: 10px;
@@ -72,7 +72,6 @@
       .catch(err => console.error('Error fetching temp history:', err));
 
     function renderChart(data) {
-      // If no data returned, log a message and set dummy data
       if (!data || data.length === 0) {
         console.warn("No data received from /current_temp_history, using dummy data.");
         let now = new Date();

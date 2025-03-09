@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <title>Historical Cycle</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+  <!-- Use stable plugin version -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1"></script>
   <style>
     body {
       background-color: #222;
@@ -28,7 +29,7 @@
       padding: 10px;
       border-radius: 8px;
       width: 100%;
-      height: 300px; /* Force a fixed height so the axes show even if data is empty */
+      height: 300px; /* Fixed height for proper display */
     }
     .date-label {
       margin-top: 10px;
@@ -51,17 +52,15 @@
 </head>
 <body>
   <div class="container">
-    <!-- Jinja variables: cycle_id and cycle_date -->
     <h1>Historical Cycle {{ cycle_id }}</h1>
     <canvas id="cycleChart"></canvas>
     <div class="date-label" id="cycleDate">Date: {{ cycle_date }}</div>
-
     <button onclick="location.href='/cycles'">Back to Cycles List</button>
     <button onclick="location.href='/'">Back to Dashboard</button>
   </div>
 
   <script>
-    // Jinja variable injection
+    // The Flask template injects these variables
     var cycleId = {{ cycle_id }};
     var cycleDate = "{{ cycle_date }}";
 
@@ -78,7 +77,6 @@
       .catch(err => console.error('Error fetching cycle data:', err));
 
     function renderCycleChart(data) {
-      // If no data or empty array, set a dummy point
       if (!data || data.length === 0) {
         console.warn("No data received for cycle; using dummy data.");
         let now = new Date();
@@ -88,7 +86,6 @@
           y_set: 0
         }];
       }
-
       cycleChart = new Chart(ctx, {
         type: 'line',
         data: {
