@@ -1,114 +1,156 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Cycle Temperature Graph</title>
-
-  <!-- 1) Load Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@latest"></script>
-  <!-- 2) Load Luxon (date/time library) -->
-  <script src="https://cdn.jsdelivr.net/npm/luxon@3"></script>
-  <!-- 3) Load Chart.js adapter for Luxon -->
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
-
+  <meta charset="UTF-8" />
+  <title>Cycle Graph</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
   <style>
     body {
       background-color: #222;
       color: #fff;
-      text-align: center;
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 0;
     }
-    .button {
+    .container {
+      width: 90%;
+      max-width: 800px;
+      margin: 20px auto;
+      text-align: center;
+    }
+    h1 {
+      margin: 20px 0 10px;
       font-size: 24px;
-      padding: 10px 20px;
-      margin: 10px;
-      cursor: pointer;
-      background: #333;
-      border: 2px solid #fff;
-      color: #fff;
-      border-radius: 8px;
-      text-decoration: none;
-      display: inline-block;
     }
-    .button:hover {
+    #cycleChart {
+      background: #333;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .date-label {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #ccc;
+    }
+    button {
+      margin: 10px 5px;
+      padding: 6px 12px;
       background: #444;
+      border: 1px solid #fff;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #555;
     }
   </style>
 </head>
 <body>
-  <h1>Cycle {{ cycle_id }} Temperature Graph</h1>
-  <canvas id="cycleChart" width="800" height="400"></canvas>
+  <div class="container">
+    <h1>Historical Cycle <span id="cycleId"></span></h1>
+    <canvas id="cycleChart"></canvas>
+    <div class="date-label" id="cycleDate"></div>
+    <button onclick="location.href='/cycles'">Back to Cycles List</button>
+    <button onclick="location.href='/'">Back to Dashboard</button>
+  </div>
+
   <script>
-    console.log("Cycle graph script loaded");
+    // The Flask view should inject these variables.
+    // For example, in your Flask template you might have:
+    // <script>var cycleId = {{ cycle_id }}; var cycleDate = "{{ cycle_date }}";</script>
+    // For demonstration, we'll assume these variables are available.
+    var cycleId = {{ cycle_id }};
+    var cycleDate = "{{ cycle_date }}";
 
-    const canvas = document.getElementById('cycleChart');
-    if (!canvas) {
-      console.error("cycleChart canvas not found!");
-    }
-    const ctx = canvas.getContext('2d');
+    document.getElementById('cycleId').textContent = cycleId;
+    document.getElementById('cycleDate').textContent = "Date: " + cycleDate;
 
-    const cycleChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        datasets: [
-          {
-            label: 'Actual Temperature (°F)',
-            data: [],
-            borderColor: 'rgb(75, 192, 192)',
-            backgroundColor: 'rgba(75, 192, 192, 0.1)',
-            fill: true,
-            tension: 0.1
-          },
-          {
-            label: 'Set Temperature (°F)',
-            data: [],
-            borderColor: 'rgb(153, 102, 255)',
-            backgroundColor: 'rgba(153, 102, 255, 0.1)',
-            fill: true,
-            tension: 0.1
-          }
-        ]
-      },
-      options: {
-        scales: {
-          x: {
-            type: 'time', // Requires a date adapter
-            time: { unit: 'minute' },
-            title: { display: true, text: 'Time' },
-            ticks: { color: '#fff' }
-          },
-          y: {
-            title: { display: true, text: 'Temperature (°F)' },
-            ticks: { color: '#fff' }
-          }
+    let ctx = document.getElementById('cycleChart').getContext('2d');
+    let cycleChart;
+
+    // Fetch historical cycle data from /cycles/<cycle_id>/data
+    fetch(`/cycles/${cycleId}/data`)
+      .then(response => response.json())
+      .then(data => {
+        renderCycleChart(data);
+      })
+      .catch(err => console.error('Error fetching cycle data:', err));
+
+    function renderCycleChart(data) {
+      cycleChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          datasets: [
+            {
+              label: 'Actual Temp (°F)',
+              data: data.map(d => ({ x: d.x, y: d.y_actual })),
+              borderColor: 'rgba(255,99,132,1)',
+              backgroundColor: 'rgba(255,99,132,0.2)',
+              fill: false,
+              tension: 0.1
+            },
+            {
+              label: 'Set Temp (°F)',
+              data: data.map(d => ({ x: d.x, y: d.y_set })),
+              borderColor: 'rgba(54,162,235,1)',
+              backgroundColor: 'rgba(54,162,235,0.2)',
+              fill: false,
+              tension: 0.1
+            }
+          ]
         },
-        plugins: {
-          legend: { labels: { color: '#fff' } }
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              type: 'time',
+              time: {
+                unit: 'minute',
+                displayFormats: {
+                  minute: 'HH:mm'
+                }
+              },
+              title: {
+                display: true,
+                text: 'Time'
+              },
+              ticks: {
+                color: '#fff'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Temperature (°F)'
+              },
+              ticks: {
+                color: '#fff'
+              },
+              beginAtZero: false
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#fff'
+              }
+            },
+            zoom: {
+              pan: {
+                enabled: true,
+                mode: 'x'
+              },
+              zoom: {
+                enabled: true,
+                mode: 'x'
+              }
+            }
+          }
         }
-      }
-    });
-
-    function fetchCycleData() {
-      console.log("Fetching cycle data for cycle {{ cycle_id }}");
-      fetch(`/cycles/{{ cycle_id }}/data`)
-        .then(response => response.json())
-        .then(data => {
-          console.log("Received cycle data:", data);
-          const data_actual = data.map(d => ({ x: d.x, y: d.y_actual }));
-          const data_set = data.map(d => ({ x: d.x, y: d.y_set }));
-          cycleChart.data.datasets[0].data = data_actual;
-          cycleChart.data.datasets[1].data = data_set;
-          cycleChart.update();
-        })
-        .catch(error => console.error("Error fetching cycle data:", error));
+      });
     }
-
-    fetchCycleData();
   </script>
-  <br>
-  <a href="/cycles" class="button">Back to Cycles List</a>
-  <a href="/" class="button">Back to Dashboard</a>
 </body>
 </html>

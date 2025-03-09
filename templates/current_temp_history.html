@@ -1,115 +1,155 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Current Temperature History</title>
-
-  <!-- 1) Load Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@latest"></script>
-  <!-- 2) Load Luxon (date/time library) -->
-  <script src="https://cdn.jsdelivr.net/npm/luxon@3"></script>
-  <!-- 3) Load Chart.js adapter for Luxon -->
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
   <style>
     body {
       background-color: #222;
       color: #fff;
-      text-align: center;
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 0;
     }
-    .button {
+    .container {
+      width: 90%;
+      max-width: 800px;
+      margin: 20px auto;
+      text-align: center;
+    }
+    h1 {
+      margin: 20px 0 10px;
       font-size: 24px;
-      padding: 10px 20px;
-      margin: 10px;
-      cursor: pointer;
-      background: #333;
-      border: 2px solid #fff;
-      color: #fff;
-      border-radius: 8px;
-      text-decoration: none;
-      display: inline-block;
     }
-    .button:hover {
+    #tempChart {
+      background: #333;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .date-label {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #ccc;
+    }
+    button {
+      margin: 10px 5px;
+      padding: 6px 12px;
       background: #444;
+      border: 1px solid #fff;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #555;
     }
   </style>
 </head>
 <body>
-  <h1>Current Temperature (Last 2 Hours)</h1>
-  <canvas id="tempChart" width="800" height="400"></canvas>
-  <br>
-  <a href="/" class="button">Back to Dashboard</a>
-  <a href="/cycles" class="button">View Historical Cycles</a>
+  <div class="container">
+    <h1>Current Temperature (Last 2 Hours)</h1>
+    <canvas id="tempChart"></canvas>
+    <div class="date-label" id="currentDate"></div>
+    <button onclick="location.href='/'">Back to Dashboard</button>
+  </div>
+
   <script>
-    console.log("Current temp history script loaded");
+    let ctx = document.getElementById('tempChart').getContext('2d');
+    let tempChart;
 
-    const canvas = document.getElementById('tempChart');
-    if (!canvas) {
-      console.error("tempChart canvas not found!");
-    }
-    const ctx = canvas.getContext('2d');
+    // Fetch current temperature history data from the endpoint
+    fetch('/current_temp_history')
+      .then(response => response.json())
+      .then(data => {
+        renderChart(data);
+      })
+      .catch(err => console.error('Error fetching temp history:', err));
 
-    const tempChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        datasets: [
-          {
-            label: 'Actual Temperature (°F)',
-            data: [],
-            borderColor: 'rgb(255, 99, 132)',
-            backgroundColor: 'rgba(255, 99, 132, 0.1)',
-            fill: true,
-            tension: 0.1
-          },
-          {
-            label: 'Set Temperature (°F)',
-            data: [],
-            borderColor: 'rgb(54, 162, 235)',
-            backgroundColor: 'rgba(54, 162, 235, 0.1)',
-            fill: true,
-            tension: 0.1
-          }
-        ]
-      },
-      options: {
-        scales: {
-          x: {
-            type: 'time',  // Requires a date adapter
-            time: { unit: 'minute' },
-            title: { display: true, text: 'Time' },
-            ticks: { color: '#fff' }
-          },
-          y: {
-            title: { display: true, text: 'Temperature (°F)' },
-            ticks: { color: '#fff' }
-          }
+    function renderChart(data) {
+      tempChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          datasets: [
+            {
+              label: 'Actual Temp (°F)',
+              data: data.map(d => ({ x: d.x, y: d.y_actual })),
+              borderColor: 'rgba(255,99,132,1)',
+              backgroundColor: 'rgba(255,99,132,0.2)',
+              fill: false,
+              tension: 0.1
+            },
+            {
+              label: 'Set Temp (°F)',
+              data: data.map(d => ({ x: d.x, y: d.y_set })),
+              borderColor: 'rgba(54,162,235,1)',
+              backgroundColor: 'rgba(54,162,235,0.2)',
+              fill: false,
+              tension: 0.1
+            }
+          ]
         },
-        plugins: {
-          legend: { labels: { color: '#fff' } }
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              type: 'time',
+              time: {
+                unit: 'minute',
+                displayFormats: {
+                  minute: 'HH:mm'
+                }
+              },
+              title: {
+                display: true,
+                text: 'Time'
+              },
+              ticks: {
+                color: '#fff'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Temperature (°F)'
+              },
+              ticks: {
+                color: '#fff'
+              },
+              beginAtZero: false
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#fff'
+              }
+            },
+            zoom: {
+              pan: {
+                enabled: true,
+                mode: 'x'
+              },
+              zoom: {
+                enabled: true,
+                mode: 'x'
+              }
+            }
+          }
         }
-      }
-    });
-
-    function fetchCurrentHistory() {
-      console.log("Fetching current temperature history...");
-      fetch('/current_temp_history')
-        .then(response => response.json())
-        .then(data => {
-          console.log("Received data:", data);
-          const data_actual = data.map(d => ({ x: d.x, y: d.y_actual }));
-          const data_set = data.map(d => ({ x: d.x, y: d.y_set }));
-          tempChart.data.datasets[0].data = data_actual;
-          tempChart.data.datasets[1].data = data_set;
-          tempChart.update();
-        })
-        .catch(error => console.error("Error fetching current temperature history:", error));
+      });
     }
 
-    fetchCurrentHistory();
-    setInterval(fetchCurrentHistory, 5000);
+    // Display today's date below the graph
+    let dateEl = document.getElementById('currentDate');
+    let today = new Date();
+    let dateString = today.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    dateEl.textContent = "Today's Date: " + dateString;
   </script>
 </body>
 </html>

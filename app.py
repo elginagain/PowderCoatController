@@ -341,9 +341,30 @@ def list_cycles():
     conn.close()
     return render_template('cycles.html', cycles=cycles)
 
+# -------------------------
+# Modified Route: Historical Cycle Graph
+# -------------------------
 @app.route('/cycles/<int:cycle_id>')
 def show_cycle(cycle_id):
-    return render_template('cycle_graph.html', cycle_id=cycle_id)
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT start_time, end_time FROM cycles WHERE id = ?", (cycle_id,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        # Use end_time if available; otherwise, use start_time
+        dt = row["end_time"] if row["end_time"] else row["start_time"]
+        # If dt is a string, attempt to parse it
+        if isinstance(dt, str):
+            try:
+                dt = datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
+            except Exception as e:
+                print("Error parsing date:", e)
+                dt = datetime.now()
+        cycle_date_str = dt.strftime("%B %d, %Y")
+    else:
+        cycle_date_str = "Unknown"
+    return render_template('cycle_graph.html', cycle_id=cycle_id, cycle_date=cycle_date_str)
 
 @app.route('/cycles/<int:cycle_id>/data')
 def cycle_data(cycle_id):
