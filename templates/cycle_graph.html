@@ -27,6 +27,8 @@
       background: #333;
       padding: 10px;
       border-radius: 8px;
+      width: 100%;
+      height: 300px;
     }
     .date-label {
       margin-top: 10px;
@@ -57,28 +59,37 @@
   </div>
 
   <script>
-    // The Flask view should inject these variables.
-    // For example, in your Flask template you might have:
+    // The Flask view should inject cycleId and cycleDate variables.
+    // For example, your Flask template might include:
     // <script>var cycleId = {{ cycle_id }}; var cycleDate = "{{ cycle_date }}";</script>
-    // For demonstration, we'll assume these variables are available.
+    // For demonstration, we assume these variables are defined.
     var cycleId = {{ cycle_id }};
     var cycleDate = "{{ cycle_date }}";
-
     document.getElementById('cycleId').textContent = cycleId;
     document.getElementById('cycleDate').textContent = "Date: " + cycleDate;
 
     let ctx = document.getElementById('cycleChart').getContext('2d');
     let cycleChart;
 
-    // Fetch historical cycle data from /cycles/<cycle_id>/data
+    // Fetch cycle data from /cycles/<cycle_id>/data
     fetch(`/cycles/${cycleId}/data`)
       .then(response => response.json())
       .then(data => {
+        console.log("Cycle Data:", data);
         renderCycleChart(data);
       })
       .catch(err => console.error('Error fetching cycle data:', err));
 
     function renderCycleChart(data) {
+      if (!data || data.length === 0) {
+        console.warn("No data received for cycle; using dummy data.");
+        let now = new Date();
+        data = [{
+          x: now.getTime(),
+          y_actual: 0,
+          y_set: 0
+        }];
+      }
       cycleChart = new Chart(ctx, {
         type: 'line',
         data: {

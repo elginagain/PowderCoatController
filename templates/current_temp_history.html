@@ -27,6 +27,9 @@
       background: #333;
       padding: 10px;
       border-radius: 8px;
+      /* Force a fixed height so that Chart.js draws axes even with no data */
+      width: 100%;
+      height: 300px;
     }
     .date-label {
       margin-top: 10px;
@@ -59,15 +62,26 @@
     let ctx = document.getElementById('tempChart').getContext('2d');
     let tempChart;
 
-    // Fetch current temperature history data from the endpoint
+    // Fetch current temp history data from /current_temp_history endpoint
     fetch('/current_temp_history')
       .then(response => response.json())
       .then(data => {
+        console.log("Current Temp History data:", data);
         renderChart(data);
       })
       .catch(err => console.error('Error fetching temp history:', err));
 
     function renderChart(data) {
+      // If no data returned, log a message and set dummy data
+      if (!data || data.length === 0) {
+        console.warn("No data received from /current_temp_history, using dummy data.");
+        let now = new Date();
+        data = [{
+          x: now.getTime(),
+          y_actual: 0,
+          y_set: 0
+        }];
+      }
       tempChart = new Chart(ctx, {
         type: 'line',
         data: {
