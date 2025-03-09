@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Cycle Graph</title>
+  <title>Historical Cycle</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
   <style>
@@ -28,7 +28,7 @@
       padding: 10px;
       border-radius: 8px;
       width: 100%;
-      height: 300px;
+      height: 300px; /* Force a fixed height so the axes show even if data is empty */
     }
     .date-label {
       margin-top: 10px;
@@ -51,22 +51,19 @@
 </head>
 <body>
   <div class="container">
-    <h1>Historical Cycle <span id="cycleId"></span></h1>
+    <!-- Jinja variables: cycle_id and cycle_date -->
+    <h1>Historical Cycle {{ cycle_id }}</h1>
     <canvas id="cycleChart"></canvas>
-    <div class="date-label" id="cycleDate"></div>
+    <div class="date-label" id="cycleDate">Date: {{ cycle_date }}</div>
+
     <button onclick="location.href='/cycles'">Back to Cycles List</button>
     <button onclick="location.href='/'">Back to Dashboard</button>
   </div>
 
   <script>
-    // The Flask view should inject cycleId and cycleDate variables.
-    // For example, your Flask template might include:
-    // <script>var cycleId = {{ cycle_id }}; var cycleDate = "{{ cycle_date }}";</script>
-    // For demonstration, we assume these variables are defined.
+    // Jinja variable injection
     var cycleId = {{ cycle_id }};
     var cycleDate = "{{ cycle_date }}";
-    document.getElementById('cycleId').textContent = cycleId;
-    document.getElementById('cycleDate').textContent = "Date: " + cycleDate;
 
     let ctx = document.getElementById('cycleChart').getContext('2d');
     let cycleChart;
@@ -81,6 +78,7 @@
       .catch(err => console.error('Error fetching cycle data:', err));
 
     function renderCycleChart(data) {
+      // If no data or empty array, set a dummy point
       if (!data || data.length === 0) {
         console.warn("No data received for cycle; using dummy data.");
         let now = new Date();
@@ -90,6 +88,7 @@
           y_set: 0
         }];
       }
+
       cycleChart = new Chart(ctx, {
         type: 'line',
         data: {
