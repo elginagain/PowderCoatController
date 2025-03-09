@@ -171,10 +171,11 @@
           <div class="arrow" id="decreaseTemp">&#9660;</div>
         </div>
       </div>
-      <!-- Current Temp Panel -->
+      <!-- Current Temp Panel (with Graph button below) -->
       <div class="panel">
         <h2>Current Temp</h2>
         <div id="currentTemp" class="temp-set">450</div>
+        <button class="button" id="graphBtn" onclick="location.href='/temperature_graph'">Graph</button>
       </div>
       <!-- Oven Panel -->
       <div class="panel">
@@ -201,13 +202,6 @@
         <h2>Timer Control</h2>
         <div class="status" id="timerStatus">Stopped</div>
         <button class="button" id="toggleTimer">Start Timer</button>
-      </div>
-    </div>
-
-    <!-- Row 3: Graph Button -->
-    <div class="row">
-      <div class="panel">
-        <button class="button" onclick="location.href='/temperature_graph'">View Temperature Graph</button>
       </div>
     </div>
   </div>
@@ -287,7 +281,7 @@
       // 4) Light Toggle
       window.toggleLight = function() {
         $.post("/toggle_light", function(response) {
-          // If you want to change the icon, do so here:
+          // If you want to change the icon or text, do so here:
           $("#toggleLight").text(response.light_on ? "💡" : "💡");
         });
       };
@@ -335,12 +329,12 @@
 
       // 7) Timer Increase/Decrease
       $("#increaseTime").click(function() {
-        timerSeconds += 60; // Increase by 1 minute
+        timerSeconds += 60; // 1 minute increments
         updateTimerDisplay();
       });
       $("#decreaseTime").click(function() {
         if (timerSeconds >= 60) {
-          timerSeconds -= 60; // Decrease by 1 minute
+          timerSeconds -= 60;
           updateTimerDisplay();
         }
       });
