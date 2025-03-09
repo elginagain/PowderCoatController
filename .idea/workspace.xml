@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="I let chatgpt redesign the layout on dashboard.html Let's see what it came up with.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="slight update, the light button has been moved.">
       <change beforePath="$PROJECT_DIR$/templates/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/dashboard.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -433,11 +432,18 @@
       <option name="project" value="LOCAL" />
       <updated>1741488222366</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="slight update, the light button has been moved.">
+      <option name="closed" value="true" />
+      <created>1741488505964</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1741488505964</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Below is a corrected version of your dashboard.html (or the relevant JavaScript section) that uses $.ajax() with contentType: &quot;application/json&quot; so the server knows it’s receiving JSON. Copy/paste this code into your existing dashboard.html, replacing your temperature-setting and keypad-handling logic. This should fix the “Unsupported Media Type” error and allow your /set_temperature endpoint to receive the correct set temperature." />
     <MESSAGE value="Explanation&#10;&#10;    New /status Endpoint:&#10;    This returns the current oven state so that the dashboard can update its UI when you return to it.&#10;    Dashboard Update:&#10;    The updated JavaScript in dashboard.html calls /status on page load and every 5 seconds to set the text of the toggle button and the status label.&#10;    Result:&#10;    Even if you navigate away and then return to the dashboard, the page will reflect the current state (i.e. “Running” if the oven is still on)." />
     <MESSAGE value="Summary&#10;&#10;    On page load, the script now fetches the current target temperature from the server via /get_temperature and updates the set temperature display.&#10;    When you navigate away and return to the dashboard, the displayed set temperature reflects the value stored on the server.&#10;    The /status endpoint is used to update the oven status so that it remains accurate." />
     <MESSAGE value="Below is an updated version of your app.py that now integrates hardware control via GPIO for your SSR and starts a PID control loop when the oven is turned on. When you click the “Start Oven” button, the code will now begin a PID loop that reads the current temperature, compares it to the setpoint, computes a duty cycle, and then drives the SSR (via PWM on a GPIO pin) to control the heating elements.&#10;&#10;Make sure you have your wiring set up so that the SSR’s input is connected to the GPIO pin defined below (here we use BCM pin 17). This code assumes it’s running on a Raspberry Pi (it checks sys.platform) and will only attempt to use RPi.GPIO if on Linux.&#10;&#10;You can copy/paste this full file into your project (replacing your existing app.py). Then, when you click “Start Oven,” it will start a new cycle and a PID control thread will begin updating the SSR output.&#10;&#10;Explanation&#10;&#10;    GPIO/PWM Setup:&#10;    We initialize RPi.GPIO and set up a PWM output on pin 17 (adjust if needed). This controls your SSR.&#10;&#10;    PID Control Loop:&#10;    When the oven is turned on via the /power endpoint, we start a new cycle and then start a PID control thread (if one isn’t already running). The PID loop reads the temperature, computes an error relative to the setpoint, and updates the PWM duty cycle to modulate the SSR output.&#10;&#10;    /power Endpoint:&#10;    The /power endpoint toggles the oven state and starts or ends a cycle accordingly, and now also starts the PID control thread.&#10;&#10;    PID Parameters:&#10;    You can adjust Kp, Ki, and Kd as needed for your oven’s dynamics.&#10;&#10;    Thread Safety:&#10;    The PID control loop runs in its own thread and stops when config[&quot;oven_on&quot;] becomes false." />
@@ -462,6 +468,7 @@
     <MESSAGE value="init gpio error fixed." />
     <MESSAGE value="Updated dashboard to make everything fit without scrolling." />
     <MESSAGE value="I let chatgpt redesign the layout on dashboard.html Let's see what it came up with." />
-    <option name="LAST_COMMIT_MESSAGE" value="I let chatgpt redesign the layout on dashboard.html Let's see what it came up with." />
+    <MESSAGE value="slight update, the light button has been moved." />
+    <option name="LAST_COMMIT_MESSAGE" value="slight update, the light button has been moved." />
   </component>
 </project>
