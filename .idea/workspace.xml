@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="if __name__ == '__main__':&#10;    init_gpio()  # Initialize GPIO now (after all imports)&#10;    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)&#10;&#10;disabled reloader.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="init gpio error fixed.">
+      <change beforePath="$PROJECT_DIR$/templates/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/dashboard.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -401,12 +400,26 @@
       <option name="project" value="LOCAL" />
       <updated>1741463939641</updated>
     </task>
-    <option name="localTasksCounter" value="39" />
+    <task id="LOCAL-00039" summary="Adjusting pid control loop to make it shut off pin 17 faster when the temp exceeds the set point.">
+      <option name="closed" value="true" />
+      <created>1741464696397</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1741464696397</updated>
+    </task>
+    <task id="LOCAL-00040" summary="init gpio error fixed.">
+      <option name="closed" value="true" />
+      <created>1741464848432</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1741464848432</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="updated current_temp_history.html" />
-    <MESSAGE value="updated app.py,  current_temp_history.html, cycles.html, and cycle_graph.html to fix an issue with the temp graph not displaying." />
     <MESSAGE value="Updated several files to add debugging features to determine why the graphing function isn't working." />
     <MESSAGE value="How This Fixes the Error&#10;&#10;    Chart.js 3+ requires a date adapter for the time scale.&#10;    By adding Luxon and chartjs-adapter-luxon, Chart.js can parse and display time-based data.&#10;    The error “Check that a complete date adapter is provided” should go away once these scripts are included in the correct order." />
     <MESSAGE value="Below is a corrected version of your dashboard.html (or the relevant JavaScript section) that uses $.ajax() with contentType: &quot;application/json&quot; so the server knows it’s receiving JSON. Copy/paste this code into your existing dashboard.html, replacing your temperature-setting and keypad-handling logic. This should fix the “Unsupported Media Type” error and allow your /set_temperature endpoint to receive the correct set temperature." />
@@ -430,6 +443,8 @@
     <MESSAGE value="#os.environ[&quot;GPIO_USE_DEV_MEM&quot;] = &quot;1&quot;  # Force RPi.GPIO to use /dev/mem" />
     <MESSAGE value="Below is an updated version of your app.py that moves the RPi.GPIO initialization into a function called init_gpio(), which is then called in the if __name__ == '__main__': block. This should help ensure that your GPIO resources are allocated fresh for your application." />
     <MESSAGE value="if __name__ == '__main__':&#10;    init_gpio()  # Initialize GPIO now (after all imports)&#10;    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)&#10;&#10;disabled reloader." />
-    <option name="LAST_COMMIT_MESSAGE" value="if __name__ == '__main__':&#10;    init_gpio()  # Initialize GPIO now (after all imports)&#10;    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)&#10;&#10;disabled reloader." />
+    <MESSAGE value="Adjusting pid control loop to make it shut off pin 17 faster when the temp exceeds the set point." />
+    <MESSAGE value="init gpio error fixed." />
+    <option name="LAST_COMMIT_MESSAGE" value="init gpio error fixed." />
   </component>
 </project>
