@@ -2,209 +2,189 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- Fixed width viewport to simulate 800x480 -->
   <meta name="viewport" content="width=800, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Oven Dashboard</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Optional: Chart.js and its zoom plugin if needed -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
   <style>
-    /* Base styling */
+    /* Global Styles */
+    * {
+      box-sizing: border-box;
+    }
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #222;
-      color: #fff;
       margin: 0;
       padding: 0;
+      background: #121212;
+      font-family: 'Segoe UI', sans-serif;
+      color: #eee;
       overflow: hidden;
     }
     .container {
       width: 100%;
       max-width: 800px;
       margin: 0 auto;
-      padding: 5px;
-      box-sizing: border-box;
+      padding: 10px;
     }
-    /* Settings gear icon in top-right corner */
-    #openSettings {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      font-size: 28px;
-      background: none;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-      z-index: 100;
-    }
-    h1 {
-      margin: 0;
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 5px 0;
-      font-size: 24px;
     }
-    /* Section styling */
-    .section {
-      border: 1px solid #fff;
-      margin: 5px auto;
-      padding: 5px;
-      border-radius: 8px;
-      max-width: 800px;
-      box-sizing: border-box;
-    }
-    /* Light icon */
-    #toggleLight {
+    header h1 {
       font-size: 28px;
+      margin: 0;
+    }
+    #openSettings {
       background: none;
       border: none;
-      color: #fff;
-      cursor: pointer;
-      margin-bottom: 5px;
-    }
-    /* Oven Control layout */
-    .oven-control {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .oven-column {
-      text-align: center;
-      flex: 1;
-      min-width: 150px;
-    }
-    .oven-column h2 {
-      margin-bottom: 3px;
-      font-size: 20px;
-    }
-    /* Temperature arrows and display */
-    .temp-controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-    }
-    .temp-set {
-      font-size: 32px;
-      border: 1px solid #fff;
-      padding: 5px;
-      width: 150px;
-      text-align: center;
-      background: #333;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .arrow {
       font-size: 28px;
+      color: #eee;
       cursor: pointer;
-      user-select: none;
     }
-    .arrow:hover {
-      color: #ffcc00;
+    /* Grid Layout for Controls */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 10px;
+      margin-top: 10px;
     }
-    /* Status & buttons */
-    .status {
-      margin: 3px;
-      font-size: 18px;
+    .panel {
+      background: #1e1e1e;
+      padding: 10px;
+      border: 1px solid #333;
+      border-radius: 8px;
+      text-align: center;
     }
-    .button {
-      font-size: 18px;
-      padding: 5px 10px;
-      margin: 5px;
-      cursor: pointer;
+    .panel h2 {
+      margin: 5px 0;
+      font-size: 22px;
+    }
+    .temp-display {
+      font-size: 40px;
+      margin: 10px 0;
+      padding: 5px;
       background: #333;
-      border: 1px solid #fff;
-      color: #fff;
       border-radius: 5px;
     }
-    .button:hover {
-      background: #444;
-    }
-    /* Timer */
-    .timer-controls {
+    .controls {
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 10px;
-      margin-bottom: 5px;
     }
-    .timer-set {
-      font-size: 32px;
-      border: 1px solid #fff;
-      padding: 5px;
-      width: 120px;
-      text-align: center;
-      background: #333;
+    .controls .arrow {
+      font-size: 30px;
       cursor: pointer;
+      user-select: none;
+      padding: 5px 10px;
+      background: #444;
+      border-radius: 5px;
     }
-    /* Keypad overlay */
+    .button {
+      background: #444;
+      border: none;
+      color: #eee;
+      font-size: 20px;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+    .button:hover {
+      background: #555;
+    }
+    /* Timer Panel Specific */
+    .timer-panel {
+      grid-column: span 2;
+    }
+    .timer-display {
+      font-size: 36px;
+      padding: 5px;
+      background: #333;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    /* Keypad Overlay */
     .keypad {
       display: none;
       position: fixed;
-      bottom: 5px;
+      bottom: 10px;
       left: 50%;
       transform: translateX(-50%);
-      background: #444;
-      padding: 5px;
-      border-radius: 5px;
-      z-index: 200;
+      background: #222;
+      border: 2px solid #444;
+      padding: 10px;
+      border-radius: 8px;
+      z-index: 1000;
     }
     .keypad button {
-      font-size: 20px;
+      font-size: 22px;
       padding: 10px;
-      margin: 3px;
+      margin: 5px;
+      background: #333;
+      border: none;
+      border-radius: 5px;
+      color: #eee;
+      cursor: pointer;
     }
-    /* Hide graph canvas in the dashboard (if moved to separate page) */
-    #tempGraph {
-      display: none;
+    .keypad button:hover {
+      background: #444;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Settings gear -->
-    <button id="openSettings" onclick="location.href='/settings'">⚙️</button>
+    <header>
+      <h1>Oven Control</h1>
+      <button id="openSettings" onclick="location.href='/settings'">⚙️</button>
+    </header>
 
-    <h1>Oven Control</h1>
-
-    <!-- Light icon -->
-    <button id="toggleLight">🔆</button>
-
-    <!-- Oven Control Section -->
-    <div class="section">
-      <div class="oven-control">
-        <!-- Left: Set Temperature -->
-        <div class="oven-column">
-          <h2>Set Temp</h2>
-          <div class="temp-controls">
-            <span class="arrow" id="decreaseTemp">&#9664;</span>
-            <div id="setTemp" class="temp-set">450</div>
-            <span class="arrow" id="increaseTemp">&#9654;</span>
-          </div>
-        </div>
-        <!-- Right: Current Temperature -->
-        <div class="oven-column">
-          <h2>Current Temp</h2>
-          <div id="currentTemp" class="temp-set">450</div>
-        </div>
-      </div>
-      <p class="status" id="ovenStatus">Stopped</p>
-      <button class="button" id="toggleOven">Start Oven</button>
+    <!-- Light Toggle Button -->
+    <div style="text-align:center; margin: 5px 0;">
+      <button id="toggleLight" class="button">🔆</button>
     </div>
 
-    <!-- Timer Section -->
-    <div class="section">
-      <h2>Timer</h2>
-      <div class="timer-controls">
-        <span class="arrow" id="decreaseTime">&#9664;</span>
-        <div id="setTimer" class="timer-set">00:30</div>
-        <span class="arrow" id="increaseTime">&#9654;</span>
+    <!-- Grid Layout for Temperature Controls -->
+    <div class="grid">
+      <!-- Set Temperature Panel -->
+      <div class="panel">
+        <h2>Set Temp</h2>
+        <div class="controls">
+          <span class="arrow" id="decreaseTemp">&#9664;</span>
+          <div id="setTemp" class="temp-display">450</div>
+          <span class="arrow" id="increaseTemp">&#9654;</span>
+        </div>
       </div>
-      <p class="status" id="timerStatus">Stopped</p>
-      <button class="button" id="toggleTimer">Start Timer</button>
+      <!-- Current Temperature Panel -->
+      <div class="panel">
+        <h2>Current Temp</h2>
+        <div id="currentTemp" class="temp-display">450</div>
+      </div>
+      <!-- Oven Power Panel (spanning two columns) -->
+      <div class="panel" style="grid-column: span 2;">
+        <p class="status" id="ovenStatus">Stopped</p>
+        <button class="button" id="toggleOven">Start Oven</button>
+      </div>
+      <!-- Timer Panel (spanning two columns) -->
+      <div class="panel timer-panel">
+        <h2>Timer</h2>
+        <div class="controls">
+          <span class="arrow" id="decreaseTime">&#9664;</span>
+          <div id="setTimer" class="timer-display">00:30</div>
+          <span class="arrow" id="increaseTime">&#9654;</span>
+        </div>
+        <p class="status" id="timerStatus">Stopped</p>
+        <button class="button" id="toggleTimer">Start Timer</button>
+      </div>
+      <!-- Temperature Graph Button -->
+      <div class="panel" style="grid-column: span 2;">
+        <button class="button" onclick="location.href='/temperature_graph'">View Temperature Graph</button>
+      </div>
     </div>
-
-    <!-- Graph button (opens separate page) -->
-    <button class="button" onclick="location.href='/temperature_graph'">View Graph</button>
   </div>
 
   <!-- Keypad Overlay -->
@@ -236,167 +216,167 @@
 
       // 1) On page load, fetch target temperature
       $.ajax({
-        url: '/get_temperature',
-        method: 'GET',
-        success: function(data) {
-          $("#setTemp").text(data.target_temperature);
-        },
-        error: function() {
-          console.error("Failed to fetch target temperature");
-        }
-      });
-
-      // 2) Update current sensor temperature every second
-      function updateCurrentTemp() {
-        $.ajax({
-          url: '/current_temperature',
+          url: '/get_temperature',
           method: 'GET',
           success: function(data) {
-            $("#currentTemp").text(data.current_temperature.toFixed(2) + " °F");
+              $("#setTemp").text(data.target_temperature);
           },
           error: function() {
-            $("#currentTemp").text("Error");
+              console.error("Failed to fetch target temperature");
           }
-        });
+      });
+
+      // 2) Update current temperature every second
+      function updateCurrentTemp() {
+          $.ajax({
+              url: '/current_temperature',
+              method: 'GET',
+              success: function(data) {
+                  $("#currentTemp").text(data.current_temperature.toFixed(2) + " °F");
+              },
+              error: function() {
+                  $("#currentTemp").text("Error");
+              }
+          });
       }
       setInterval(updateCurrentTemp, 1000);
       updateCurrentTemp();
 
       // 3) Fetch oven status every 5 seconds
       function updateOvenStatus() {
-        $.ajax({
-          url: '/status',
-          method: 'GET',
-          success: function(data) {
-            $("#toggleOven").text(data.oven_on ? "Stop Oven" : "Start Oven");
-            $("#ovenStatus").text(data.oven_on ? "Running" : "Stopped");
-          },
-          error: function() {
-            console.error("Error fetching oven status.");
-          }
-        });
+          $.ajax({
+              url: '/status',
+              method: 'GET',
+              success: function(data) {
+                  $("#toggleOven").text(data.oven_on ? "Stop Oven" : "Start Oven");
+                  $("#ovenStatus").text(data.oven_on ? "Running" : "Stopped");
+              },
+              error: function() {
+                  console.error("Error fetching oven status.");
+              }
+          });
       }
       updateOvenStatus();
       setInterval(updateOvenStatus, 5000);
 
       // 4) Light Toggle
       $("#toggleLight").click(function() {
-        $.post("/toggle_light", function(response) {
-          $("#toggleLight").text(response.light_on ? "💡" : "🔆");
-        });
+          $.post("/toggle_light", function(response) {
+              $("#toggleLight").text(response.light_on ? "💡" : "🔆");
+          });
       });
 
       // 5) Oven Toggle
       $("#toggleOven").click(function() {
-        $.post("/power", function(response) {
-          $("#toggleOven").text(response.oven_on ? "Stop Oven" : "Start Oven");
-          $("#ovenStatus").text(response.oven_on ? "Running" : "Stopped");
-        });
+          $.post("/power", function(response) {
+              $("#toggleOven").text(response.oven_on ? "Stop Oven" : "Start Oven");
+              $("#ovenStatus").text(response.oven_on ? "Running" : "Stopped");
+          });
       });
 
       // 6) Timer Start/Stop
       $("#toggleTimer").click(function() {
-        if (timerRunning) {
-          clearInterval(timerInterval);
-          timerRunning = false;
-          $("#toggleTimer").text("Start Timer");
-          $("#timerStatus").text("Stopped");
-        } else {
-          timerRunning = true;
-          timerInterval = setInterval(() => {
-            if (timerSeconds > 0) {
-              timerSeconds--;
-              updateTimerDisplay();
-            } else {
+          if (timerRunning) {
               clearInterval(timerInterval);
               timerRunning = false;
               $("#toggleTimer").text("Start Timer");
               $("#timerStatus").text("Stopped");
-            }
-          }, 1000);
-          $("#toggleTimer").text("Stop Timer");
-          $("#timerStatus").text("Running");
-        }
+          } else {
+              timerRunning = true;
+              timerInterval = setInterval(() => {
+                  if (timerSeconds > 0) {
+                      timerSeconds--;
+                      updateTimerDisplay();
+                  } else {
+                      clearInterval(timerInterval);
+                      timerRunning = false;
+                      $("#toggleTimer").text("Start Timer");
+                      $("#timerStatus").text("Stopped");
+                  }
+              }, 1000);
+              $("#toggleTimer").text("Stop Timer");
+              $("#timerStatus").text("Running");
+          }
       });
 
       function updateTimerDisplay() {
-        let minutes = Math.floor(timerSeconds / 60);
-        let seconds = timerSeconds % 60;
-        $("#setTimer").text(
-          (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds
-        );
+          let minutes = Math.floor(timerSeconds / 60);
+          let seconds = timerSeconds % 60;
+          $("#setTimer").text(
+              (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds
+          );
       }
 
       // 7) Timer Increase/Decrease
       $("#increaseTime").click(function() {
-        timerSeconds += 300; // 5 minutes
-        updateTimerDisplay();
+          timerSeconds += 300; // 5 minutes
+          updateTimerDisplay();
       });
       $("#decreaseTime").click(function() {
-        if (timerSeconds >= 300) {
-          timerSeconds -= 300;
-          updateTimerDisplay();
-        }
+          if (timerSeconds >= 300) {
+              timerSeconds -= 300;
+              updateTimerDisplay();
+          }
       });
 
       // 8) Temperature Increase/Decrease with JSON update
       $("#increaseTemp").click(function() {
-        let temp = parseInt($("#setTemp").text()) || 0;
-        temp += 25;
-        $("#setTemp").text(temp);
-        updateSetTemperature(temp);
+          let temp = parseInt($("#setTemp").text()) || 0;
+          temp += 25;
+          $("#setTemp").text(temp);
+          updateSetTemperature(temp);
       });
       $("#decreaseTemp").click(function() {
-        let temp = parseInt($("#setTemp").text()) || 0;
-        temp -= 25;
-        $("#setTemp").text(temp);
-        updateSetTemperature(temp);
+          let temp = parseInt($("#setTemp").text()) || 0;
+          temp -= 25;
+          $("#setTemp").text(temp);
+          updateSetTemperature(temp);
       });
 
       function updateSetTemperature(newTemp) {
-        $.ajax({
-          url: "/set_temperature",
-          method: "POST",
-          contentType: "application/json; charset=utf-8",
-          data: JSON.stringify({ temperature: newTemp }),
-          dataType: "json",
-          success: function(response) {
-            console.log("Temperature updated:", response);
-          },
-          error: function(xhr, status, error) {
-            console.error("Error updating temperature:", status, error);
-          }
-        });
+          $.ajax({
+              url: "/set_temperature",
+              method: "POST",
+              contentType: "application/json; charset=utf-8",
+              data: JSON.stringify({ temperature: newTemp }),
+              dataType: "json",
+              success: function(response) {
+                  console.log("Temperature updated:", response);
+              },
+              error: function(xhr, status, error) {
+                  console.error("Error updating temperature:", status, error);
+              }
+          });
       }
 
       // 9) Keypad Handlers for setTemp and setTimer
       $(".temp-set, .timer-set").click(function() {
-        $("#keypad").fadeIn();
-        $("#keypad").data("target", this);
-        $("#keypad-input").val("");
+          $("#keypad").fadeIn();
+          $("#keypad").data("target", this);
+          $("#keypad-input").val("");
       });
 
       window.enterValue = function(value) {
-        $("#keypad-input").val($("#keypad-input").val() + value);
+          $("#keypad-input").val($("#keypad-input").val() + value);
       };
 
       window.clearKeypad = function() {
-        $("#keypad-input").val("");
+          $("#keypad-input").val("");
       };
 
       window.setKeypadValue = function() {
-        let target = $("#keypad").data("target");
-        let newValue = parseInt($("#keypad-input").val());
-        if (!isNaN(newValue)) {
-          $(target).text(newValue);
-          if ($(target).attr("id") === "setTimer") {
-            timerSeconds = newValue * 60;
-            updateTimerDisplay();
-          } else if ($(target).attr("id") === "setTemp") {
-            updateSetTemperature(newValue);
+          let target = $("#keypad").data("target");
+          let newValue = parseInt($("#keypad-input").val());
+          if (!isNaN(newValue)) {
+              $(target).text(newValue);
+              if ($(target).attr("id") === "setTimer") {
+                  timerSeconds = newValue * 60;
+                  updateTimerDisplay();
+              } else if ($(target).attr("id") === "setTemp") {
+                  updateSetTemperature(newValue);
+              }
           }
-        }
-        $("#keypad").fadeOut();
+          $("#keypad").fadeOut();
       };
     });
   </script>
