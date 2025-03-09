@@ -304,8 +304,15 @@ def current_temp_history():
         if row:
             cycle_id_to_use = row["id"]
     if cycle_id_to_use is None:
-        print("No cycle data available for current_temp_history")
-        return jsonify([])
+        # No cycle data available; return a dummy data point
+        now = datetime.now()
+        dummy = [{
+            "x": int(now.timestamp() * 1000),
+            "y_actual": read_temperature(),
+            "y_set": config["target_temperature"]
+        }]
+        print("No cycle data available; returning dummy data.")
+        return jsonify(dummy)
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
@@ -325,6 +332,7 @@ def current_temp_history():
             "y_set": r["set_temperature"]
         })
     return jsonify(data)
+
 
 @app.route('/cycles')
 def list_cycles():
