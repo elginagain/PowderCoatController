@@ -117,7 +117,6 @@ def temperature_logger():
     global current_cycle_id
     while True:
         current_temp = read_temperature()
-        # Debug print to see if we're logging or not
         print(f"[Logger] current_temp={current_temp}, oven_on={config['oven_on']}, cycle_id={current_cycle_id}")
         if config["oven_on"] and current_cycle_id is not None:
             conn = get_db()
@@ -131,7 +130,7 @@ def temperature_logger():
             print("[Logger] Inserted reading into DB.")
         else:
             print("[Logger] Not logging because oven_off or no active cycle.")
-        time.sleep(5)  # Sleep 5 seconds for slower logging
+        time.sleep(5)  # Log every 5 seconds for debugging
 
 logger_thread = threading.Thread(target=temperature_logger, daemon=True)
 logger_thread.start()
@@ -289,16 +288,11 @@ def temperature_graph():
     return render_template('current_temp_history.html')
 
 # -------------------------
-# Temporarily remove the 2-hour filter to see if ANY data is returned
+# Modified /current_temp_history Route (No 2-hour filter for diagnosis)
 # -------------------------
 @app.route('/current_temp_history')
 def current_temp_history():
-    """
-    Returns data for the current cycle (no 2-hour filter).
-    We also provide a dummy if no rows exist.
-    """
     if current_cycle_id is None:
-        # If no current cycle, return a single dummy point
         now = datetime.now()
         dummy = [{
             "x": int(now.timestamp() * 1000),
@@ -310,9 +304,9 @@ def current_temp_history():
 
     conn = get_db()
     cur = conn.cursor()
-    # Retrieve ALL readings for the current cycle
+    # Use 'localtime' modifier to get local timestamps
     cur.execute("""
-        SELECT CAST((julianday(timestamp) - 2440587.5)*86400 AS INTEGER) AS ts,
+        SELECT CAST((julianday(timestamp, 'localtime') - 2440587.5)*86400 AS INTEGER) AS ts,
                temperature,
                set_temperature
         FROM readings
@@ -382,7 +376,7 @@ def cycle_data(cycle_id):
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
-        SELECT CAST((julianday(timestamp) - 2440587.5)*86400 AS INTEGER) AS ts,
+        SELECT CAST((julianday(timestamp, 'localtime') - 2440587.5)*86400 AS INTEGER) AS ts,
                temperature,
                set_temperature
         FROM readings
@@ -421,9 +415,6 @@ def test_pwm():
     threading.Thread(target=pwm_test, daemon=True).start()
     return "PWM test started"
 
-# -------------------------
-# NEW DIAGNOSTIC ROUTE: Show last 10 readings from DB
-# -------------------------
 @app.route('/test_readings')
 def test_readings():
     conn = get_db()

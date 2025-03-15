@@ -30,7 +30,7 @@
       padding: 10px;
       border-radius: 8px;
       width: 100%;
-      height: 300px; /* Fixed height so the chart area is visible */
+      height: 300px; /* Fixed height */
     }
     .date-label {
       margin-top: 10px;
@@ -60,21 +60,21 @@
   </div>
 
   <script>
-    // We'll keep references to our chart and data here
-    let tempChart = null;
-    let ctx = null;
-    const autoRefreshInterval = 10000; // 10 seconds
+    let ctx = document.getElementById('tempChart').getContext('2d');
+    let tempChart;
 
-    // 1) On page load, we create the chart with empty data
-    window.addEventListener('DOMContentLoaded', () => {
-      ctx = document.getElementById('tempChart').getContext('2d');
-      initChart();       // Create the Chart.js chart with empty datasets
-      fetchAndUpdate();  // Fetch data once immediately
-      setInterval(fetchAndUpdate, autoRefreshInterval); // Then auto-refresh every 10s
-      displayDate();     // Show today's date below the chart
-    });
+    // Function to fetch data and update the chart
+    function fetchAndUpdate() {
+      fetch('/current_temp_history')
+        .then(response => response.json())
+        .then(data => {
+          console.log("Current Temp History data:", data);
+          updateChartData(data);
+        })
+        .catch(err => console.error('Error fetching temp history:', err));
+    }
 
-    // 2) Initialize the chart with empty datasets
+    // Initialize the chart
     function initChart() {
       tempChart = new Chart(ctx, {
         type: 'line',
@@ -82,7 +82,7 @@
           datasets: [
             {
               label: 'Actual Temp (°F)',
-              data: [],  // empty initially
+              data: [],
               borderColor: 'rgba(255,99,132,1)',
               backgroundColor: 'rgba(255,99,132,0.2)',
               fill: false,
@@ -151,21 +151,10 @@
       });
     }
 
-    // 3) Fetch data from /current_temp_history, update the chart
-    function fetchAndUpdate() {
-      fetch('/current_temp_history')
-        .then(response => response.json())
-        .then(data => {
-          console.log("Refreshed Current Temp History data:", data);
-          updateChartData(data);
-        })
-        .catch(err => console.error('Error fetching temp history:', err));
-    }
-
-    // 4) Update the chart's datasets with new data
+    // Update the chart with new data
     function updateChartData(data) {
       if (!data || data.length === 0) {
-        console.warn("No data returned; using dummy data for chart.");
+        console.warn("No data returned; using dummy data.");
         let now = new Date();
         data = [{
           x: now.getTime(),
@@ -173,18 +162,15 @@
           y_set: 0
         }];
       }
-
-      // Convert data into separate arrays for actual vs. set
       let actualData = data.map(d => ({ x: d.x, y: d.y_actual }));
       let setData = data.map(d => ({ x: d.x, y: d.y_set }));
 
-      // Assign to the existing chart datasets
       tempChart.data.datasets[0].data = actualData;
       tempChart.data.datasets[1].data = setData;
-      tempChart.update(); // Redraw
+      tempChart.update();
     }
 
-    // 5) Display today's date below the chart
+    // Display today's date
     function displayDate() {
       let dateEl = document.getElementById('currentDate');
       let today = new Date();
@@ -195,6 +181,15 @@
       });
       dateEl.textContent = "Today's Date: " + dateString;
     }
+
+    // Initialize everything
+    window.addEventListener('DOMContentLoaded', () => {
+      initChart();
+      fetchAndUpdate();
+      // Refresh data every 10 seconds
+      setInterval(fetchAndUpdate, 10000);
+      displayDate();
+    });
   </script>
 </body>
 </html>

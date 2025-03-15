@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="xplanation of Key Changes in app.py&#10;&#10;    Temperature Logger: Now prints a debug message every 5 seconds, so you can see if it’s inserting data or not.&#10;    /current_temp_history: Temporarily removed the 2‑hour filter. We simply show all readings in the current cycle. If no readings are found, we return dummy data.&#10;    /test_readings: New route that returns the last 10 rows from the readings table. This helps confirm whether new rows are actually being inserted.&#10;    Logger Sleep: Changed from 1 second to 5 seconds so it doesn’t spam the database too quickly while debugging.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/current_temp_history.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/current_temp_history.html" afterDir="false" />
-    </list>
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Key Changes:&#10;&#10;    We have an interval that calls fetchAndUpdate() every 10 seconds, so the chart automatically refreshes.&#10;    We initialize the chart once (with empty data) in initChart(), then in fetchAndUpdate() we fetch data from /current_temp_history and call updateChartData(data) to update the existing chart without re-creating it.&#10;    This ensures you see new points every 10 seconds." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -96,14 +93,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1740950963541</updated>
-    </task>
-    <task id="LOCAL-00009" summary="Updated several files to add debugging features to determine why the graphing function isn't working.">
-      <option name="closed" value="true" />
-      <created>1741393051665</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1741393051665</updated>
     </task>
     <task id="LOCAL-00010" summary="Updated several files to add debugging features to determine why the graphing function isn't working.">
       <option name="closed" value="true" />
@@ -489,11 +478,18 @@
       <option name="project" value="LOCAL" />
       <updated>1742057635956</updated>
     </task>
-    <option name="localTasksCounter" value="58" />
+    <task id="LOCAL-00058" summary="Key Changes:&#10;&#10;    We have an interval that calls fetchAndUpdate() every 10 seconds, so the chart automatically refreshes.&#10;    We initialize the chart once (with empty data) in initChart(), then in fetchAndUpdate() we fetch data from /current_temp_history and call updateChartData(data) to update the existing chart without re-creating it.&#10;    This ensures you see new points every 10 seconds.">
+      <option name="closed" value="true" />
+      <created>1742059184319</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1742059184319</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Below is an updated full version of your app.py with one key change: the immediate call to GPIO.cleanup() at startup has been removed. (We’re still registering cleanup via atexit.) In some cases, calling GPIO.cleanup() right away can interfere with RPi.GPIO’s ability to determine the SOC peripheral base address." />
     <MESSAGE value="Below is a complete updated version of your app.py that replaces RPi.GPIO with the pigpio library for GPIO/PWM control. This approach works more reliably on Debian‑based systems (like Raspberry Pi OS Lite 32‑bit on your hardware) and avoids the “GPIO not allocated” error. Note that you must have pigpiod (the pigpio daemon) running for this code to work. You can start it with:" />
     <MESSAGE value="Key Points&#10;&#10;    This version uses pigpio in soft mode by calling:&#10;&#10;pi = pigpio.pi('soft')&#10;&#10;This bypasses hardware detection and avoids the &quot;GPIO not allocated&quot; error.&#10;The PID loop computes a duty cycle (0–100) and converts it to pigpio’s scale (0–255).&#10;A new test endpoint /test_pwm lets you force a 100% PWM output for 10 seconds to check the LED.&#10;Make sure to run pigpio in soft mode; you do not need to start pigpiod when using soft mode." />
     <MESSAGE value="Below is the complete updated app.py that uses pigpio in its normal mode (without “soft”) so that it connects to the pigpiod daemon running on localhost." />
@@ -518,6 +514,7 @@
     <MESSAGE value="With these older versions of Chart.js (2.9.4) and chartjs-plugin-zoom (0.7.7), your Pi’s Chromium browser should no longer complain about import conditions. The julianday() usage in app.py ensures timestamps are recognized. Let me know if this finally resolves the blank graph issue!" />
     <MESSAGE value="Using Chart.js 2.9.4 + Moment.js 2.24.0 + chartjs-plugin-zoom 0.7.7 should resolve the “import conditions not satisfied” error on older Pi browsers. Let me know if this finally displays the graphs correctly!" />
     <MESSAGE value="xplanation of Key Changes in app.py&#10;&#10;    Temperature Logger: Now prints a debug message every 5 seconds, so you can see if it’s inserting data or not.&#10;    /current_temp_history: Temporarily removed the 2‑hour filter. We simply show all readings in the current cycle. If no readings are found, we return dummy data.&#10;    /test_readings: New route that returns the last 10 rows from the readings table. This helps confirm whether new rows are actually being inserted.&#10;    Logger Sleep: Changed from 1 second to 5 seconds so it doesn’t spam the database too quickly while debugging." />
-    <option name="LAST_COMMIT_MESSAGE" value="xplanation of Key Changes in app.py&#10;&#10;    Temperature Logger: Now prints a debug message every 5 seconds, so you can see if it’s inserting data or not.&#10;    /current_temp_history: Temporarily removed the 2‑hour filter. We simply show all readings in the current cycle. If no readings are found, we return dummy data.&#10;    /test_readings: New route that returns the last 10 rows from the readings table. This helps confirm whether new rows are actually being inserted.&#10;    Logger Sleep: Changed from 1 second to 5 seconds so it doesn’t spam the database too quickly while debugging." />
+    <MESSAGE value="Key Changes:&#10;&#10;    We have an interval that calls fetchAndUpdate() every 10 seconds, so the chart automatically refreshes.&#10;    We initialize the chart once (with empty data) in initChart(), then in fetchAndUpdate() we fetch data from /current_temp_history and call updateChartData(data) to update the existing chart without re-creating it.&#10;    This ensures you see new points every 10 seconds." />
+    <option name="LAST_COMMIT_MESSAGE" value="Key Changes:&#10;&#10;    We have an interval that calls fetchAndUpdate() every 10 seconds, so the chart automatically refreshes.&#10;    We initialize the chart once (with empty data) in initChart(), then in fetchAndUpdate() we fetch data from /current_temp_history and call updateChartData(data) to update the existing chart without re-creating it.&#10;    This ensures you see new points every 10 seconds." />
   </component>
 </project>
