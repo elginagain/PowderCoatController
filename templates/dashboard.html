@@ -48,6 +48,7 @@
       color: #eee;
       cursor: pointer;
     }
+    /* Changed light icon to text button "Light" */
     #toggleLight {
       position: absolute;
       top: 2px;
@@ -155,7 +156,8 @@
     <header>
       <h1>Oven Control</h1>
       <button id="openSettings" onclick="location.href='/settings'">⚙️</button>
-      <button id="toggleLight" onclick="toggleLight()">💡</button>
+      <!-- Changed button text from emoji "💡" to text "Light" -->
+      <button id="toggleLight" onclick="toggleLight()">Light</button>
     </header>
 
     <!-- Row 1: Temperature & Oven Controls -->
@@ -283,7 +285,8 @@
       // 4) Light Toggle
       window.toggleLight = function() {
           $.post("/toggle_light", function(response) {
-              $("#toggleLight").text(response.light_on ? "💡" : "💡");
+              // For now, using plain text; change text if needed
+              $("#toggleLight").text(response.light_on ? "Light On" : "Light Off");
           });
       };
 

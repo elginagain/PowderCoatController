@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Explanation&#10;&#10;    The light toggle button now uses plain text. On the Pi it will display “Toggle Light” initially, and when clicked, it updates to “Light On” or “Light Off” depending on the state.&#10;    All other functionality remains the same.">
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Below is a complete version of your original dashboard (from [489]) with the following modifications:&#10;&#10;    The View Temperature Graph button is moved so that it appears directly below the current temperature display and is now simply labeled “Graph.”&#10;    The up/down arrows for the timer have been changed to point up (▲) and down (▼) (instead of left/right), and both arrows are placed to the right of the timer value.&#10;    The original layout and functionality (including the 10-key keypad, timer functionality, and light toggle) are preserved.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/dashboard.html.bak" beforeDir="false" afterPath="$PROJECT_DIR$/templates/dashboard.html.bak" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,22 +96,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1740950963541</updated>
-    </task>
-    <task id="LOCAL-00014" summary="Below is a corrected version of your dashboard.html (or the relevant JavaScript section) that uses $.ajax() with contentType: &quot;application/json&quot; so the server knows it’s receiving JSON. Copy/paste this code into your existing dashboard.html, replacing your temperature-setting and keypad-handling logic. This should fix the “Unsupported Media Type” error and allow your /set_temperature endpoint to receive the correct set temperature.">
-      <option name="closed" value="true" />
-      <created>1741396950935</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1741396950935</updated>
-    </task>
-    <task id="LOCAL-00015" summary="Below is a corrected version of your dashboard.html (or the relevant JavaScript section) that uses $.ajax() with contentType: &quot;application/json&quot; so the server knows it’s receiving JSON. Copy/paste this code into your existing dashboard.html, replacing your temperature-setting and keypad-handling logic. This should fix the “Unsupported Media Type” error and allow your /set_temperature endpoint to receive the correct set temperature.">
-      <option name="closed" value="true" />
-      <created>1741397042516</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1741397042516</updated>
     </task>
     <task id="LOCAL-00016" summary="Explanation&#10;&#10;    New /status Endpoint:&#10;    This returns the current oven state so that the dashboard can update its UI when you return to it.&#10;    Dashboard Update:&#10;    The updated JavaScript in dashboard.html calls /status on page load and every 5 seconds to set the text of the toggle button and the status label.&#10;    Result:&#10;    Even if you navigate away and then return to the dashboard, the page will reflect the current state (i.e. “Running” if the oven is still on).">
       <option name="closed" value="true" />
@@ -489,11 +473,26 @@
       <option name="project" value="LOCAL" />
       <updated>1742063907027</updated>
     </task>
-    <option name="localTasksCounter" value="63" />
+    <task id="LOCAL-00063" summary="Below is a complete version of your original dashboard (from [489]) with the following modifications:&#10;&#10;    The View Temperature Graph button is moved so that it appears directly below the current temperature display and is now simply labeled “Graph.”&#10;    The up/down arrows for the timer have been changed to point up (▲) and down (▼) (instead of left/right), and both arrows are placed to the right of the timer value.&#10;    The original layout and functionality (including the 10-key keypad, timer functionality, and light toggle) are preserved.">
+      <option name="closed" value="true" />
+      <created>1742064210547</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1742064210547</updated>
+    </task>
+    <task id="LOCAL-00064" summary="Below is a complete version of your original dashboard (from [489]) with the following modifications:&#10;&#10;    The View Temperature Graph button is moved so that it appears directly below the current temperature display and is now simply labeled “Graph.”&#10;    The up/down arrows for the timer have been changed to point up (▲) and down (▼) (instead of left/right), and both arrows are placed to the right of the timer value.&#10;    The original layout and functionality (including the 10-key keypad, timer functionality, and light toggle) are preserved.">
+      <option name="closed" value="true" />
+      <created>1742064330796</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1742064330796</updated>
+    </task>
+    <option name="localTasksCounter" value="65" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="created run_app.sh" />
     <MESSAGE value="pi = pigpio.pi(&quot;soft&quot;, 8888)" />
     <MESSAGE value="Below is a complete updated version of your app.py that reverts to using RPi.GPIO (which you’ve confirmed works in your test script) instead of pigpio. This version uses hardware PWM via RPi.GPIO on GPIO 17. (Make sure you run it with sudo, and that your virtual environment is active.)" />
     <MESSAGE value="#os.environ[&quot;GPIO_USE_DEV_MEM&quot;] = &quot;1&quot;  # Force RPi.GPIO to use /dev/mem" />
@@ -518,6 +517,7 @@
     <MESSAGE value="Summary&#10;&#10;    We removed the ,'localtime' from your SQL queries.&#10;    You’re still storing local timestamps in the DB via datetime.now().&#10;    Chart.js is reading the numeric timestamps (epoch) and displaying them in the browser’s local time.&#10;&#10;If your Pi’s clock/time zone is correct (timedatectl), the lines on the graph should now reflect local time without being offset by ~10 hours. If you still see the wrong time, ensure you’ve replaced all instances of ,'localtime' and restarted Flask. Also confirm your Pi’s time zone matches the actual local time." />
     <MESSAGE value="Summary of Changes&#10;&#10;    In both /current_temp_history and /cycles/&lt;int:cycle_id&gt;/data routes, we now use the SQLite modifier 'utc' in the julianday function so that timestamps stored via datetime.now() (local time) are correctly converted to Unix epoch seconds in UTC.&#10;    The HTML files include Moment.js so that Chart.js 2.9.4 can handle time scales.&#10;    The current temperature graph auto-refreshes every 10 seconds." />
     <MESSAGE value="Explanation&#10;&#10;    The light toggle button now uses plain text. On the Pi it will display “Toggle Light” initially, and when clicked, it updates to “Light On” or “Light Off” depending on the state.&#10;    All other functionality remains the same." />
-    <option name="LAST_COMMIT_MESSAGE" value="Explanation&#10;&#10;    The light toggle button now uses plain text. On the Pi it will display “Toggle Light” initially, and when clicked, it updates to “Light On” or “Light Off” depending on the state.&#10;    All other functionality remains the same." />
+    <MESSAGE value="Below is a complete version of your original dashboard (from [489]) with the following modifications:&#10;&#10;    The View Temperature Graph button is moved so that it appears directly below the current temperature display and is now simply labeled “Graph.”&#10;    The up/down arrows for the timer have been changed to point up (▲) and down (▼) (instead of left/right), and both arrows are placed to the right of the timer value.&#10;    The original layout and functionality (including the 10-key keypad, timer functionality, and light toggle) are preserved." />
+    <option name="LAST_COMMIT_MESSAGE" value="Below is a complete version of your original dashboard (from [489]) with the following modifications:&#10;&#10;    The View Temperature Graph button is moved so that it appears directly below the current temperature display and is now simply labeled “Graph.”&#10;    The up/down arrows for the timer have been changed to point up (▲) and down (▼) (instead of left/right), and both arrows are placed to the right of the timer value.&#10;    The original layout and functionality (including the 10-key keypad, timer functionality, and light toggle) are preserved." />
   </component>
 </project>
