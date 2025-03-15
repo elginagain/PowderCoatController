@@ -288,7 +288,7 @@ def temperature_graph():
     return render_template('current_temp_history.html')
 
 # -------------------------
-# Modified /current_temp_history Route (No 2-hour filter for diagnosis)
+# /current_temp_history route with NO 'localtime' in the query
 # -------------------------
 @app.route('/current_temp_history')
 def current_temp_history():
@@ -304,9 +304,9 @@ def current_temp_history():
 
     conn = get_db()
     cur = conn.cursor()
-    # Use 'localtime' modifier to get local timestamps
+    # No 'localtime' so we won't shift times again
     cur.execute("""
-        SELECT CAST((julianday(timestamp, 'localtime') - 2440587.5)*86400 AS INTEGER) AS ts,
+        SELECT CAST((julianday(timestamp) - 2440587.5)*86400 AS INTEGER) AS ts,
                temperature,
                set_temperature
         FROM readings
@@ -371,12 +371,13 @@ def show_cycle(cycle_id):
         cycle_date_str = "Unknown"
     return render_template('cycle_graph.html', cycle_id=cycle_id, cycle_date=cycle_date_str)
 
+# /cycles/<int:cycle_id>/data route with NO 'localtime'
 @app.route('/cycles/<int:cycle_id>/data')
 def cycle_data(cycle_id):
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
-        SELECT CAST((julianday(timestamp, 'localtime') - 2440587.5)*86400 AS INTEGER) AS ts,
+        SELECT CAST((julianday(timestamp) - 2440587.5)*86400 AS INTEGER) AS ts,
                temperature,
                set_temperature
         FROM readings
