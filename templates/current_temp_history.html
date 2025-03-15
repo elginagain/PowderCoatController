@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>Current Temperature History</title>
-  <!-- Chart.js 2.9.4 -->
+  <!-- Include Moment.js, Chart.js 2.9.4, and chartjs-plugin-zoom 0.7.7 -->
   <script src="https://cdn.jsdelivr.net/npm/moment@2.24.0/moment.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
-  <!-- chartjs-plugin-zoom 0.7.7 -->
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7/dist/chartjs-plugin-zoom.min.js"></script>
   <style>
     body {
@@ -64,7 +63,6 @@
     let ctx = document.getElementById('tempChart').getContext('2d');
     let tempChart;
 
-    // Fetch current temp history data
     fetch('/current_temp_history')
       .then(response => response.json())
       .then(data => {
@@ -162,7 +160,7 @@
       });
     }
 
-    // Display today's date below the graph
+    // Display today's date
     let dateEl = document.getElementById('currentDate');
     let today = new Date();
     let dateString = today.toLocaleDateString('en-US', {

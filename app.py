@@ -117,6 +117,8 @@ def temperature_logger():
     global current_cycle_id
     while True:
         current_temp = read_temperature()
+        # Debug print to see if we're logging or not
+        print(f"[Logger] current_temp={current_temp}, oven_on={config['oven_on']}, cycle_id={current_cycle_id}")
         if config["oven_on"] and current_cycle_id is not None:
             conn = get_db()
             cur = conn.cursor()
@@ -126,7 +128,10 @@ def temperature_logger():
             """, (current_cycle_id, datetime.now(), current_temp, config["target_temperature"]))
             conn.commit()
             conn.close()
-        time.sleep(1)
+            print("[Logger] Inserted reading into DB.")
+        else:
+            print("[Logger] Not logging because oven_off or no active cycle.")
+        time.sleep(5)  # Sleep 5 seconds for slower logging
 
 logger_thread = threading.Thread(target=temperature_logger, daemon=True)
 logger_thread.start()
@@ -180,7 +185,6 @@ def pid_control_loop():
         dt = current_time - last_time if (current_time - last_time) > 0 else 1
 
         integral += error * dt
-        # Clamp the integral term
         integral = max(min(integral, max_integral), -max_integral)
 
         derivative = (error - last_error) / dt
@@ -284,48 +288,51 @@ def current_temperature():
 def temperature_graph():
     return render_template('current_temp_history.html')
 
+# -------------------------
+# Temporarily remove the 2-hour filter to see if ANY data is returned
+# -------------------------
 @app.route('/current_temp_history')
 def current_temp_history():
     """
-    Returns data for the last 2 hours of the current cycle (or most recent cycle).
-    Timestamps are converted via julianday() to handle fractional seconds properly.
+    Returns data for the current cycle (no 2-hour filter).
+    We also provide a dummy if no rows exist.
     """
-    two_hours_ago = datetime.now() - timedelta(hours=2)
-    cycle_id_to_use = current_cycle_id
-    if cycle_id_to_use is None:
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT id FROM cycles
-            WHERE end_time IS NOT NULL AND end_time >= ?
-            ORDER BY end_time DESC LIMIT 1
-        """, (two_hours_ago,))
-        row = cur.fetchone()
-        conn.close()
-        if row:
-            cycle_id_to_use = row["id"]
-    if cycle_id_to_use is None:
+    if current_cycle_id is None:
+        # If no current cycle, return a single dummy point
         now = datetime.now()
         dummy = [{
             "x": int(now.timestamp() * 1000),
             "y_actual": read_temperature(),
             "y_set": config["target_temperature"]
         }]
-        print("No cycle data available; returning dummy data.")
+        print("No active cycle; returning dummy data.")
         return jsonify(dummy)
+
     conn = get_db()
     cur = conn.cursor()
+    # Retrieve ALL readings for the current cycle
     cur.execute("""
         SELECT CAST((julianday(timestamp) - 2440587.5)*86400 AS INTEGER) AS ts,
                temperature,
                set_temperature
         FROM readings
-        WHERE cycle_id = ? AND timestamp >= ?
+        WHERE cycle_id = ?
         ORDER BY timestamp ASC
-    """, (cycle_id_to_use, two_hours_ago))
+    """, (current_cycle_id,))
     rows = cur.fetchall()
     conn.close()
-    print(f"current_temp_history: Found {len(rows)} readings for cycle {cycle_id_to_use}")
+
+    if not rows:
+        now = datetime.now()
+        dummy = [{
+            "x": int(now.timestamp() * 1000),
+            "y_actual": read_temperature(),
+            "y_set": config["target_temperature"]
+        }]
+        print("No readings found for current cycle; returning dummy data.")
+        return jsonify(dummy)
+
+    print(f"current_temp_history: Found {len(rows)} readings for cycle {current_cycle_id}")
     data = []
     for r in rows:
         data.append({
@@ -372,10 +379,6 @@ def show_cycle(cycle_id):
 
 @app.route('/cycles/<int:cycle_id>/data')
 def cycle_data(cycle_id):
-    """
-    Returns historical data for a given cycle.
-    Timestamps converted with julianday() to handle microseconds.
-    """
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
@@ -417,6 +420,31 @@ def test_pwm():
             print("PWM test complete")
     threading.Thread(target=pwm_test, daemon=True).start()
     return "PWM test started"
+
+# -------------------------
+# NEW DIAGNOSTIC ROUTE: Show last 10 readings from DB
+# -------------------------
+@app.route('/test_readings')
+def test_readings():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT cycle_id, timestamp, temperature, set_temperature
+        FROM readings
+        ORDER BY timestamp DESC
+        LIMIT 10
+    """)
+    rows = cur.fetchall()
+    conn.close()
+    result = []
+    for r in rows:
+        result.append({
+            "cycle_id": r["cycle_id"],
+            "timestamp": str(r["timestamp"]),
+            "temperature": r["temperature"],
+            "set_temperature": r["set_temperature"]
+        })
+    return jsonify(result)
 
 if __name__ == '__main__':
     init_gpio()  # Initialize GPIO now
