@@ -94,7 +94,7 @@
       background: #444;
       border-radius: 3px;
       padding: 3px 6px;
-      margin: 2px;
+      margin: 2px 0;
     }
     .arrow:hover {
       color: #ffcc00;
@@ -169,11 +169,10 @@
           <div class="arrow" id="decreaseTemp">&#9660;</div>
         </div>
       </div>
-      <!-- Current Temp Panel -->
+      <!-- Current Temp Panel with Graph Button below -->
       <div class="panel">
         <h2>Current Temp</h2>
         <div id="currentTemp" class="temp-set">450</div>
-        <!-- Moved Graph button directly below current temp display -->
         <button class="button" id="graphBtn" onclick="location.href='/temperature_graph'">Graph</button>
       </div>
       <!-- Oven Control Panel -->
@@ -186,13 +185,12 @@
 
     <!-- Row 2: Timer Controls -->
     <div class="row">
-      <!-- Timer Panel: Timer value with up/down arrows on the right -->
+      <!-- Timer Panel (with vertical up/down arrows) -->
       <div class="panel">
         <h2>Timer</h2>
         <div>
-          <div id="setTimer" class="timer-set">00:30</div>
-          <!-- Up/Down arrows placed to the right -->
           <div class="arrow" id="increaseTime">&#9650;</div>
+          <div id="setTimer" class="timer-set">00:30</div>
           <div class="arrow" id="decreaseTime">&#9660;</div>
         </div>
       </div>
@@ -282,19 +280,16 @@
       updateOvenStatus();
       setInterval(updateOvenStatus, 5000);
 
-      // 4) Light Toggle - Use emoji (if supported) or fallback text if necessary
+      // 4) Light Toggle
       window.toggleLight = function() {
           $.post("/toggle_light", function(response) {
-              // On your PC the emoji works; on Pi, if not, you might change it to text.
-              $("#toggleLight").html(response.light_on ? "💡" : "💡");
+              $("#toggleLight").text(response.light_on ? "💡" : "💡");
           });
       };
 
       // 5) Oven Toggle
       $("#toggleOven").click(function() {
-          console.log("toggle oven clicked");
           $.post("/power", function(response) {
-              console.log("toggle oven response:", response);
               $("#toggleOven").text(response.oven_on ? "Stop Oven" : "Start Oven");
               $("#ovenStatus").text(response.oven_on ? "Running" : "Stopped");
           });
@@ -333,7 +328,7 @@
           );
       }
 
-      // 7) Timer Increase/Decrease (for timer, up/down arrows are to the right)
+      // 7) Timer Increase/Decrease
       $("#increaseTime").click(function() {
           timerSeconds += 60; // Increase by 1 minute
           updateTimerDisplay();
