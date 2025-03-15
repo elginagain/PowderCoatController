@@ -4,9 +4,10 @@
   <meta charset="UTF-8" />
   <title>Historical Cycle</title>
   <!-- Chart.js 2.9.4 -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.24.0/moment.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
   <!-- chartjs-plugin-zoom 0.7.7 -->
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7/dist/chartjs-plugin-zoom.min.js"></script>
   <style>
     body {
       background-color: #222;
@@ -62,14 +63,12 @@
   </div>
 
   <script>
-    // Jinja variable injection
     var cycleId = {{ cycle_id }};
     var cycleDate = "{{ cycle_date }}";
 
     let ctx = document.getElementById('cycleChart').getContext('2d');
     let cycleChart;
 
-    // Fetch cycle data from /cycles/<cycle_id>/data
     fetch(`/cycles/${cycleId}/data`)
       .then(response => response.json())
       .then(data => {

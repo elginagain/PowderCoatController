@@ -305,7 +305,6 @@ def current_temp_history():
         if row:
             cycle_id_to_use = row["id"]
     if cycle_id_to_use is None:
-        # No cycle data, return dummy data
         now = datetime.now()
         dummy = [{
             "x": int(now.timestamp() * 1000),

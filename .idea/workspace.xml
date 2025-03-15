@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Temp graph was messed up during the switch to showing time at the bottom. The link to historical cycles has been added to the dashboard now.">
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="With these older versions of Chart.js (2.9.4) and chartjs-plugin-zoom (0.7.7), your Pi’s Chromium browser should no longer complain about import conditions. The julianday() usage in app.py ensures timestamps are recognized. Let me know if this finally resolves the blank graph issue!">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/current_temp_history.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/current_temp_history.html" afterDir="false" />
@@ -98,14 +98,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1740950963541</updated>
-    </task>
-    <task id="LOCAL-00006" summary="updated current_temp_history.html">
-      <option name="closed" value="true" />
-      <created>1741391105694</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1741391105694</updated>
     </task>
     <task id="LOCAL-00007" summary="updated app.py,  current_temp_history.html, cycles.html, and cycle_graph.html to fix an issue with the temp graph not displaying.">
       <option name="closed" value="true" />
@@ -491,11 +483,18 @@
       <option name="project" value="LOCAL" />
       <updated>1741543573447</updated>
     </task>
-    <option name="localTasksCounter" value="55" />
+    <task id="LOCAL-00055" summary="With these older versions of Chart.js (2.9.4) and chartjs-plugin-zoom (0.7.7), your Pi’s Chromium browser should no longer complain about import conditions. The julianday() usage in app.py ensures timestamps are recognized. Let me know if this finally resolves the blank graph issue!">
+      <option name="closed" value="true" />
+      <created>1742055265129</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1742055265129</updated>
+    </task>
+    <option name="localTasksCounter" value="56" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added GPIO.cleanup()  # Clean up any previous allocations" />
     <MESSAGE value="elow is an updated version of the GPIO setup section for your app.py. This version does a few things to help resolve the &quot;GPIO not allocated&quot; error:&#10;&#10;    Disables warnings: Some issues occur because of leftover warnings or previous allocations.&#10;    Registers a cleanup handler via atexit: This ensures that GPIO.cleanup() is always called on exit.&#10;    Attempts a cleanup before re‑initializing: This can help free any resources left over from previous runs.&#10;    Uses GPIO.setmode(GPIO.BCM) explicitly: To ensure the board is set to BCM mode." />
     <MESSAGE value="Added import os&#10;os.environ[&quot;GPIO_USE_DEV_MEM&quot;] = &quot;1&quot;  # Force RPi.GPIO to use /dev/mem&#10;&#10;Since you’re running Debian Bookworm instead of Raspberry Pi OS, the /dev/gpiomem device isn’t being created by your kernel. RPi.GPIO normally uses /dev/gpiomem on Raspberry Pi OS, but on other distributions, you’ll need to force it to use /dev/mem instead. (Be aware that using /dev/mem is less secure, so you should only run this code in a controlled environment.)&#10;&#10;One common workaround is to set the environment variable GPIO_USE_DEV_MEM to &quot;1&quot; before RPi.GPIO is imported. This tells RPi.GPIO to use /dev/mem." />
     <MESSAGE value="Below is an updated full version of your app.py with one key change: the immediate call to GPIO.cleanup() at startup has been removed. (We’re still registering cleanup via atexit.) In some cases, calling GPIO.cleanup() right away can interfere with RPi.GPIO’s ability to determine the SOC peripheral base address." />
@@ -520,6 +519,7 @@
     <MESSAGE value="Updated graphs to show time at bottom. app.py revised to support this feature." />
     <MESSAGE value="fixed typo in dashboard" />
     <MESSAGE value="Temp graph was messed up during the switch to showing time at the bottom. The link to historical cycles has been added to the dashboard now." />
-    <option name="LAST_COMMIT_MESSAGE" value="Temp graph was messed up during the switch to showing time at the bottom. The link to historical cycles has been added to the dashboard now." />
+    <MESSAGE value="With these older versions of Chart.js (2.9.4) and chartjs-plugin-zoom (0.7.7), your Pi’s Chromium browser should no longer complain about import conditions. The julianday() usage in app.py ensures timestamps are recognized. Let me know if this finally resolves the blank graph issue!" />
+    <option name="LAST_COMMIT_MESSAGE" value="With these older versions of Chart.js (2.9.4) and chartjs-plugin-zoom (0.7.7), your Pi’s Chromium browser should no longer complain about import conditions. The julianday() usage in app.py ensures timestamps are recognized. Let me know if this finally resolves the blank graph issue!" />
   </component>
 </project>
