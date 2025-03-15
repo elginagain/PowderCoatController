@@ -15,6 +15,7 @@ app = Flask(__name__)
 
 CONFIG_FILE = "config.json"
 
+
 def load_config():
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, "r") as f:
@@ -29,9 +30,11 @@ def load_config():
         "time_remaining": 0
     }
 
+
 def save_config(config):
     with open(CONFIG_FILE, "w") as f:
         json.dump(config, f, indent=4)
+
 
 config = load_config()
 
@@ -41,6 +44,8 @@ init_db()
 # Global variable for PWM and SSR pin
 pwm = None
 SSR_PIN = 17  # GPIO pin for SSR control
+LIGHT_PIN = 27  # GPIO pin for light control
+
 
 # -------------------------
 # Function to Initialize GPIO using RPi.GPIO
@@ -52,10 +57,13 @@ def init_gpio():
             import RPi.GPIO as GPIO
             GPIO.setwarnings(False)
             GPIO.setmode(GPIO.BCM)
+            # Setup SSR control pin
             GPIO.setup(SSR_PIN, GPIO.OUT)
-            # Set up PWM on SSR_PIN at 100Hz.
             pwm = GPIO.PWM(SSR_PIN, 100)
             pwm.start(0)  # Start with 0% duty cycle (heater off)
+            # Setup Light control pin
+            GPIO.setup(LIGHT_PIN, GPIO.OUT)
+            GPIO.output(LIGHT_PIN, GPIO.LOW)  # Start with light off
             print("GPIO initialized successfully.")
         except Exception as e:
             print("Error setting up GPIO:", e)
@@ -63,10 +71,12 @@ def init_gpio():
     else:
         pwm = None
 
+
 # -------------------------
 # Cycle Management Functions
 # -------------------------
 current_cycle_id = None
+
 
 def start_new_cycle():
     global current_cycle_id
@@ -79,6 +89,7 @@ def start_new_cycle():
     print(f"Started new cycle, id {current_cycle_id}")
     return current_cycle_id
 
+
 def end_current_cycle():
     global current_cycle_id
     if current_cycle_id is not None:
@@ -90,6 +101,7 @@ def end_current_cycle():
         print(f"Ended cycle, id {current_cycle_id}")
         current_cycle_id = None
         purge_old_cycles()
+
 
 def purge_old_cycles():
     conn = get_db()
@@ -109,6 +121,7 @@ def purge_old_cycles():
         conn.commit()
         print(f"Purged cycles: {ids}")
     conn.close()
+
 
 # -------------------------
 # Background Temperature Logger
@@ -130,7 +143,8 @@ def temperature_logger():
             print("[Logger] Inserted reading into DB.")
         else:
             print("[Logger] Not logging because oven_off or no active cycle.")
-        time.sleep(5)  # Log every 5 seconds for debugging
+        time.sleep(5)
+
 
 logger_thread = threading.Thread(target=temperature_logger, daemon=True)
 logger_thread.start()
@@ -142,6 +156,7 @@ timer_running = config.get("timer_running", False)
 time_remaining = config.get("time_remaining", 0)
 timer_start_time = None
 timer_lock = threading.Lock()
+
 
 def timer_thread():
     global time_remaining, timer_running, timer_start_time
@@ -159,6 +174,7 @@ def timer_thread():
             timer_start_time = time.time()
         time.sleep(1)
 
+
 timer_thread_instance = threading.Thread(target=timer_thread, daemon=True)
 timer_thread_instance.start()
 
@@ -171,6 +187,7 @@ Kd = 0.05
 integral = 0.0
 last_error = 0.0
 pid_thread = None
+
 
 def pid_control_loop():
     global integral, last_error
@@ -185,7 +202,6 @@ def pid_control_loop():
 
         integral += error * dt
         integral = max(min(integral, max_integral), -max_integral)
-
         derivative = (error - last_error) / dt
         output = Kp * error + Ki * integral + Kd * derivative
         duty_cycle = max(0, min(100, output))
@@ -200,6 +216,7 @@ def pid_control_loop():
         pwm.ChangeDutyCycle(0)
     print("PID control loop ended.")
 
+
 # -------------------------
 # Routes
 # -------------------------
@@ -207,15 +224,28 @@ def pid_control_loop():
 def dashboard():
     return render_template('dashboard.html')
 
+
 @app.route('/settings')
 def settings():
     return render_template('settings.html')
 
+
 @app.route('/toggle_light', methods=['POST'])
 def toggle_light():
+    # Toggle the configuration flag
     config["light_on"] = not config.get("light_on", False)
     save_config(config)
+    # Control the physical light output using LIGHT_PIN
+    try:
+        import RPi.GPIO as GPIO
+        if config["light_on"]:
+            GPIO.output(LIGHT_PIN, GPIO.HIGH)
+        else:
+            GPIO.output(LIGHT_PIN, GPIO.LOW)
+    except Exception as e:
+        print("Error toggling light output:", e)
     return jsonify({"light_on": config["light_on"]})
+
 
 @app.route('/power', methods=['POST'])
 def toggle_oven():
@@ -234,6 +264,7 @@ def toggle_oven():
     print(f"Oven status now: {config['oven_on']}")
     return jsonify({"oven_on": config["oven_on"]})
 
+
 @app.route('/toggle_timer', methods=['POST'])
 def toggle_timer():
     global timer_running, timer_start_time, time_remaining
@@ -250,6 +281,7 @@ def toggle_timer():
         save_config(config)
     return jsonify({"timer_running": timer_running, "time_remaining": int(time_remaining)})
 
+
 @app.route('/set_timer', methods=['POST'])
 def set_timer():
     global time_remaining, timer_running
@@ -262,10 +294,12 @@ def set_timer():
         save_config(config)
     return jsonify({"time_remaining": int(time_remaining)})
 
+
 @app.route('/get_timer', methods=['GET'])
 def get_timer():
     global timer_running, time_remaining
     return jsonify({"timer_running": timer_running, "time_remaining": int(time_remaining)})
+
 
 @app.route('/set_temperature', methods=['POST'])
 def set_temperature_endpoint():
@@ -274,18 +308,22 @@ def set_temperature_endpoint():
     save_config(config)
     return jsonify({"target_temperature": config["target_temperature"]})
 
+
 @app.route('/get_temperature', methods=['GET'])
 def get_temperature_endpoint():
     return jsonify({"target_temperature": config["target_temperature"]})
+
 
 @app.route('/current_temperature', methods=['GET'])
 def current_temperature():
     temp = read_temperature()
     return jsonify({"current_temperature": temp})
 
+
 @app.route('/temperature_graph')
 def temperature_graph():
     return render_template('current_temp_history.html')
+
 
 # -------------------------
 # Modified /current_temp_history Route (No time filter for diagnosis)
@@ -304,7 +342,6 @@ def current_temp_history():
 
     conn = get_db()
     cur = conn.cursor()
-    # Use 'utc' modifier to convert stored local timestamps to UTC
     cur.execute("""
         SELECT CAST((julianday(timestamp, 'utc') - 2440587.5)*86400 AS INTEGER) AS ts,
                temperature,
@@ -336,6 +373,7 @@ def current_temp_history():
         })
     return jsonify(data)
 
+
 @app.route('/cycles')
 def list_cycles():
     conn = get_db()
@@ -350,6 +388,7 @@ def list_cycles():
     cycles = cur.fetchall()
     conn.close()
     return render_template('cycles.html', cycles=cycles)
+
 
 @app.route('/cycles/<int:cycle_id>')
 def show_cycle(cycle_id):
@@ -370,6 +409,7 @@ def show_cycle(cycle_id):
     else:
         cycle_date_str = "Unknown"
     return render_template('cycle_graph.html', cycle_id=cycle_id, cycle_date=cycle_date_str)
+
 
 @app.route('/cycles/<int:cycle_id>/data')
 def cycle_data(cycle_id):
@@ -395,13 +435,15 @@ def cycle_data(cycle_id):
         })
     return jsonify(data)
 
+
 @app.route('/status')
 def status():
     return jsonify({
-         "oven_on": config.get("oven_on", False),
-         "timer_running": timer_running,
-         "time_remaining": int(time_remaining)
+        "oven_on": config.get("oven_on", False),
+        "timer_running": timer_running,
+        "time_remaining": int(time_remaining)
     })
+
 
 @app.route('/test_pwm', methods=['GET'])
 def test_pwm():
@@ -412,8 +454,10 @@ def test_pwm():
             time.sleep(10)
             pwm.ChangeDutyCycle(0)
             print("PWM test complete")
+
     threading.Thread(target=pwm_test, daemon=True).start()
     return "PWM test started"
+
 
 @app.route('/test_readings')
 def test_readings():
@@ -436,6 +480,7 @@ def test_readings():
             "set_temperature": r["set_temperature"]
         })
     return jsonify(result)
+
 
 if __name__ == '__main__':
     init_gpio()  # Initialize GPIO now

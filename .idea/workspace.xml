@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Below is a complete version of your original dashboard (from [489]) with the following modifications:&#10;&#10;    The View Temperature Graph button is moved so that it appears directly below the current temperature display and is now simply labeled “Graph.”&#10;    The up/down arrows for the timer have been changed to point up (▲) and down (▼) (instead of left/right), and both arrows are placed to the right of the timer value.&#10;    The original layout and functionality (including the 10-key keypad, timer functionality, and light toggle) are preserved.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/dashboard.html" afterDir="false" />
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="This version only changes the light toggle button's text—from an emoji to a plain text button labeled &quot;Light&quot; (which later updates to &quot;Light On&quot; or &quot;Light Off&quot; based on state) while preserving your original layout.">
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,14 +95,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1740950963541</updated>
-    </task>
-    <task id="LOCAL-00016" summary="Explanation&#10;&#10;    New /status Endpoint:&#10;    This returns the current oven state so that the dashboard can update its UI when you return to it.&#10;    Dashboard Update:&#10;    The updated JavaScript in dashboard.html calls /status on page load and every 5 seconds to set the text of the toggle button and the status label.&#10;    Result:&#10;    Even if you navigate away and then return to the dashboard, the page will reflect the current state (i.e. “Running” if the oven is still on).">
-      <option name="closed" value="true" />
-      <created>1741397573884</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1741397573884</updated>
     </task>
     <task id="LOCAL-00017" summary="Summary&#10;&#10;    On page load, the script now fetches the current target temperature from the server via /get_temperature and updates the set temperature display.&#10;    When you navigate away and return to the dashboard, the displayed set temperature reflects the value stored on the server.&#10;    The /status endpoint is used to update the oven status so that it remains accurate.">
       <option name="closed" value="true" />
@@ -489,11 +480,18 @@
       <option name="project" value="LOCAL" />
       <updated>1742064330796</updated>
     </task>
-    <option name="localTasksCounter" value="65" />
+    <task id="LOCAL-00065" summary="This version only changes the light toggle button's text—from an emoji to a plain text button labeled &quot;Light&quot; (which later updates to &quot;Light On&quot; or &quot;Light Off&quot; based on state) while preserving your original layout.">
+      <option name="closed" value="true" />
+      <created>1742078621573</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1742078621573</updated>
+    </task>
+    <option name="localTasksCounter" value="66" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="pi = pigpio.pi(&quot;soft&quot;, 8888)" />
     <MESSAGE value="Below is a complete updated version of your app.py that reverts to using RPi.GPIO (which you’ve confirmed works in your test script) instead of pigpio. This version uses hardware PWM via RPi.GPIO on GPIO 17. (Make sure you run it with sudo, and that your virtual environment is active.)" />
     <MESSAGE value="#os.environ[&quot;GPIO_USE_DEV_MEM&quot;] = &quot;1&quot;  # Force RPi.GPIO to use /dev/mem" />
     <MESSAGE value="Below is an updated version of your app.py that moves the RPi.GPIO initialization into a function called init_gpio(), which is then called in the if __name__ == '__main__': block. This should help ensure that your GPIO resources are allocated fresh for your application." />
@@ -518,6 +516,7 @@
     <MESSAGE value="Summary of Changes&#10;&#10;    In both /current_temp_history and /cycles/&lt;int:cycle_id&gt;/data routes, we now use the SQLite modifier 'utc' in the julianday function so that timestamps stored via datetime.now() (local time) are correctly converted to Unix epoch seconds in UTC.&#10;    The HTML files include Moment.js so that Chart.js 2.9.4 can handle time scales.&#10;    The current temperature graph auto-refreshes every 10 seconds." />
     <MESSAGE value="Explanation&#10;&#10;    The light toggle button now uses plain text. On the Pi it will display “Toggle Light” initially, and when clicked, it updates to “Light On” or “Light Off” depending on the state.&#10;    All other functionality remains the same." />
     <MESSAGE value="Below is a complete version of your original dashboard (from [489]) with the following modifications:&#10;&#10;    The View Temperature Graph button is moved so that it appears directly below the current temperature display and is now simply labeled “Graph.”&#10;    The up/down arrows for the timer have been changed to point up (▲) and down (▼) (instead of left/right), and both arrows are placed to the right of the timer value.&#10;    The original layout and functionality (including the 10-key keypad, timer functionality, and light toggle) are preserved." />
-    <option name="LAST_COMMIT_MESSAGE" value="Below is a complete version of your original dashboard (from [489]) with the following modifications:&#10;&#10;    The View Temperature Graph button is moved so that it appears directly below the current temperature display and is now simply labeled “Graph.”&#10;    The up/down arrows for the timer have been changed to point up (▲) and down (▼) (instead of left/right), and both arrows are placed to the right of the timer value.&#10;    The original layout and functionality (including the 10-key keypad, timer functionality, and light toggle) are preserved." />
+    <MESSAGE value="This version only changes the light toggle button's text—from an emoji to a plain text button labeled &quot;Light&quot; (which later updates to &quot;Light On&quot; or &quot;Light Off&quot; based on state) while preserving your original layout." />
+    <option name="LAST_COMMIT_MESSAGE" value="This version only changes the light toggle button's text—from an emoji to a plain text button labeled &quot;Light&quot; (which later updates to &quot;Light On&quot; or &quot;Light Off&quot; based on state) while preserving your original layout." />
   </component>
 </project>
