@@ -11,6 +11,9 @@ from temperature_sensor import read_temperature  # Your sensor reading function
 from db import get_db, init_db  # Database helper functions
 import sys
 
+# Import the auto-tuning algorithm
+from pid_autotune import auto_tune_pid
+
 app = Flask(__name__)
 
 CONFIG_FILE = "config.json"
@@ -20,7 +23,6 @@ def load_config():
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, "r") as f:
             config = json.load(f)
-            # Ensure calibration keys exist
             if "calibration_offset" not in config:
                 config["calibration_offset"] = 0.0
             if "calibration_scale" not in config:
@@ -28,7 +30,7 @@ def load_config():
             return config
     return {
         "temp_offset": 0.0,
-        "pid_tunings": [10, 5, 1],
+        "pid_tunings": [1.0, 0.1, 0.05],
         "target_temperature": 350,
         "oven_on": False,
         "light_on": False,
@@ -46,18 +48,13 @@ def save_config(config):
 
 config = load_config()
 
-# Initialize the database at startup.
 init_db()
 
-# Global variable for PWM and SSR pin, and light control pin
 pwm = None
 SSR_PIN = 17  # GPIO pin for SSR control
 LIGHT_PIN = 27  # GPIO pin for light control
 
 
-# -------------------------
-# Function to Initialize GPIO using RPi.GPIO
-# -------------------------
 def init_gpio():
     global pwm
     if sys.platform.startswith("linux"):
@@ -65,13 +62,11 @@ def init_gpio():
             import RPi.GPIO as GPIO
             GPIO.setwarnings(False)
             GPIO.setmode(GPIO.BCM)
-            # Setup SSR control pin
             GPIO.setup(SSR_PIN, GPIO.OUT)
             pwm = GPIO.PWM(SSR_PIN, 100)
-            pwm.start(0)  # 0% duty cycle (heater off)
-            # Setup Light control pin
+            pwm.start(0)
             GPIO.setup(LIGHT_PIN, GPIO.OUT)
-            GPIO.output(LIGHT_PIN, GPIO.LOW)  # Light off by default
+            GPIO.output(LIGHT_PIN, GPIO.LOW)
             print("GPIO initialized successfully.")
         except Exception as e:
             print("Error setting up GPIO:", e)
@@ -80,9 +75,6 @@ def init_gpio():
         pwm = None
 
 
-# -------------------------
-# Calibration Helper Function
-# -------------------------
 def get_calibrated_temperature():
     raw = read_temperature()
     offset = config.get("calibration_offset", 0.0)
@@ -90,9 +82,6 @@ def get_calibrated_temperature():
     return (raw - offset) / scale
 
 
-# -------------------------
-# Cycle Management Functions
-# -------------------------
 current_cycle_id = None
 
 
@@ -141,9 +130,6 @@ def purge_old_cycles():
     conn.close()
 
 
-# -------------------------
-# Background Temperature Logger (stores calibrated values)
-# -------------------------
 def temperature_logger():
     global current_cycle_id
     while True:
@@ -167,9 +153,6 @@ def temperature_logger():
 logger_thread = threading.Thread(target=temperature_logger, daemon=True)
 logger_thread.start()
 
-# -------------------------
-# Timer Logic
-# -------------------------
 timer_running = config.get("timer_running", False)
 time_remaining = config.get("time_remaining", 0)
 timer_start_time = None
@@ -196,19 +179,12 @@ def timer_thread():
 timer_thread_instance = threading.Thread(target=timer_thread, daemon=True)
 timer_thread_instance.start()
 
-# -------------------------
-# PID Control for SSR Output (using calibrated temperature)
-# -------------------------
-Kp = 1.0
-Ki = 0.1
-Kd = 0.05
-integral = 0.0
-last_error = 0.0
-pid_thread = None
+# Global PID parameters; these will be updated by auto-tuning.
+pid_params = {"Kp": 1.0, "Ki": 0.1, "Kd": 0.05}
 
 
 def pid_control_loop():
-    global integral, last_error
+    global pid_params, integral, last_error
     last_time = time.time()
     max_integral = 500
     while config["oven_on"]:
@@ -221,12 +197,11 @@ def pid_control_loop():
         integral += error * dt
         integral = max(min(integral, max_integral), -max_integral)
         derivative = (error - last_error) / dt
-        output = Kp * error + Ki * integral + Kd * derivative
+        output = pid_params["Kp"] * error + pid_params["Ki"] * integral + pid_params["Kd"] * derivative
         duty_cycle = max(0, min(100, output))
         print(
             f"PID: setpoint={setpoint}, calibrated_current={current_temp:.2f}, error={error:.2f}, duty={duty_cycle:.2f}")
         if pwm is not None:
-            print(f"Calling pwm.ChangeDutyCycle({duty_cycle})")
             pwm.ChangeDutyCycle(duty_cycle)
         last_error = error
         last_time = current_time
@@ -236,18 +211,19 @@ def pid_control_loop():
     print("PID control loop ended.")
 
 
+pid_thread = None
+
+
 # -------------------------
 # Calibration Routes
 # -------------------------
 @app.route('/calibrate_temperature', methods=['GET'])
 def calibrate_temperature_page():
-    # You need to create a corresponding 'calibrate.html' template with instructions.
     return render_template('calibrate.html')
 
 
 @app.route('/calibrate_temperature/ice', methods=['POST'])
 def calibrate_ice():
-    # Take a raw reading (without calibration correction)
     raw_ice = read_temperature()
     config["calibration_ice"] = raw_ice
     save_config(config)
@@ -271,12 +247,28 @@ def calibrate_boiling():
     offset = raw_ice - scale * expected_ice
     config["calibration_scale"] = scale
     config["calibration_offset"] = offset
-    # Remove temporary calibration values
     config.pop("calibration_ice", None)
     config.pop("calibration_boiling", None)
     save_config(config)
     print(f"Calibration complete: scale={scale}, offset={offset}")
     return jsonify({"scale": scale, "offset": offset, "message": "Calibration complete."})
+
+
+# -------------------------
+# PID Auto-Tune Route
+# -------------------------
+@app.route('/pid_autotune', methods=['GET', 'POST'])
+def pid_autotune_route():
+    if request.method == 'POST':
+        # Run the auto-tuning routine; note that this function will use the global pwm and SSR_PIN.
+        tuned = auto_tune_pid(config, pwm, SSR_PIN)
+        pid_params.update(tuned)
+        config["pid_tunings"] = [tuned["Kp"], tuned["Ki"], tuned["Kd"]]
+        save_config(config)
+        print(f"PID Auto-Tune complete: {tuned}")
+        return jsonify({"message": "PID auto-tune complete", "tuned": tuned})
+    else:
+        return render_template('pid_autotune.html')
 
 
 # -------------------------
@@ -385,9 +377,6 @@ def temperature_graph():
     return render_template('current_temp_history.html')
 
 
-# -------------------------
-# Modified /current_temp_history Route (No time filter for diagnosis)
-# -------------------------
 @app.route('/current_temp_history')
 def current_temp_history():
     if current_cycle_id is None:

@@ -4,11 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Explanation&#10;&#10;    We added a new global variable LIGHT_PIN = 27.&#10;    In init_gpio(), we now also set up the light pin as an output and initialize it to LOW.&#10;    In the /toggle_light route, after toggling the configuration flag, we import RPi.GPIO (if available) and set LIGHT_PIN to HIGH if the light is on and LOW if off.&#10;    All other functionality remains unchanged.">
-      <change afterPath="$PROJECT_DIR$/templates/calibrate.html" afterDir="false" />
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="configured the temperature calibration stuff to work now.">
+      <change afterPath="$PROJECT_DIR$/pid_autotune.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/settings.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/settings.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/pid_autotune.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/pid_autotune.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,14 +98,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1740950963541</updated>
-    </task>
-    <task id="LOCAL-00018" summary="Below is an updated version of your app.py that now integrates hardware control via GPIO for your SSR and starts a PID control loop when the oven is turned on. When you click the “Start Oven” button, the code will now begin a PID loop that reads the current temperature, compares it to the setpoint, computes a duty cycle, and then drives the SSR (via PWM on a GPIO pin) to control the heating elements.&#10;&#10;Make sure you have your wiring set up so that the SSR’s input is connected to the GPIO pin defined below (here we use BCM pin 17). This code assumes it’s running on a Raspberry Pi (it checks sys.platform) and will only attempt to use RPi.GPIO if on Linux.&#10;&#10;You can copy/paste this full file into your project (replacing your existing app.py). Then, when you click “Start Oven,” it will start a new cycle and a PID control thread will begin updating the SSR output.&#10;&#10;Explanation&#10;&#10;    GPIO/PWM Setup:&#10;    We initialize RPi.GPIO and set up a PWM output on pin 17 (adjust if needed). This controls your SSR.&#10;&#10;    PID Control Loop:&#10;    When the oven is turned on via the /power endpoint, we start a new cycle and then start a PID control thread (if one isn’t already running). The PID loop reads the temperature, computes an error relative to the setpoint, and updates the PWM duty cycle to modulate the SSR output.&#10;&#10;    /power Endpoint:&#10;    The /power endpoint toggles the oven state and starts or ends a cycle accordingly, and now also starts the PID control thread.&#10;&#10;    PID Parameters:&#10;    You can adjust Kp, Ki, and Kd as needed for your oven’s dynamics.&#10;&#10;    Thread Safety:&#10;    The PID control loop runs in its own thread and stops when config[&quot;oven_on&quot;] becomes false.">
-      <option name="closed" value="true" />
-      <created>1741406435451</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1741406435451</updated>
     </task>
     <task id="LOCAL-00019" summary="Below is an updated version of your app.py that now integrates hardware control via GPIO for your SSR and starts a PID control loop when the oven is turned on. When you click the “Start Oven” button, the code will now begin a PID loop that reads the current temperature, compares it to the setpoint, computes a duty cycle, and then drives the SSR (via PWM on a GPIO pin) to control the heating elements.&#10;&#10;Make sure you have your wiring set up so that the SSR’s input is connected to the GPIO pin defined below (here we use BCM pin 17). This code assumes it’s running on a Raspberry Pi (it checks sys.platform) and will only attempt to use RPi.GPIO if on Linux.&#10;&#10;You can copy/paste this full file into your project (replacing your existing app.py). Then, when you click “Start Oven,” it will start a new cycle and a PID control thread will begin updating the SSR output.&#10;&#10;Explanation&#10;&#10;    GPIO/PWM Setup:&#10;    We initialize RPi.GPIO and set up a PWM output on pin 17 (adjust if needed). This controls your SSR.&#10;&#10;    PID Control Loop:&#10;    When the oven is turned on via the /power endpoint, we start a new cycle and then start a PID control thread (if one isn’t already running). The PID loop reads the temperature, computes an error relative to the setpoint, and updates the PWM duty cycle to modulate the SSR output.&#10;&#10;    /power Endpoint:&#10;    The /power endpoint toggles the oven state and starts or ends a cycle accordingly, and now also starts the PID control thread.&#10;&#10;    PID Parameters:&#10;    You can adjust Kp, Ki, and Kd as needed for your oven’s dynamics.&#10;&#10;    Thread Safety:&#10;    The PID control loop runs in its own thread and stops when config[&quot;oven_on&quot;] becomes false.">
       <option name="closed" value="true" />
@@ -491,11 +483,18 @@
       <option name="project" value="LOCAL" />
       <updated>1742079321838</updated>
     </task>
-    <option name="localTasksCounter" value="67" />
+    <task id="LOCAL-00067" summary="configured the temperature calibration stuff to work now.">
+      <option name="closed" value="true" />
+      <created>1742080881308</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1742080881308</updated>
+    </task>
+    <option name="localTasksCounter" value="68" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="#os.environ[&quot;GPIO_USE_DEV_MEM&quot;] = &quot;1&quot;  # Force RPi.GPIO to use /dev/mem" />
     <MESSAGE value="Below is an updated version of your app.py that moves the RPi.GPIO initialization into a function called init_gpio(), which is then called in the if __name__ == '__main__': block. This should help ensure that your GPIO resources are allocated fresh for your application." />
     <MESSAGE value="if __name__ == '__main__':&#10;    init_gpio()  # Initialize GPIO now (after all imports)&#10;    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)&#10;&#10;disabled reloader." />
     <MESSAGE value="Adjusting pid control loop to make it shut off pin 17 faster when the temp exceeds the set point." />
@@ -520,6 +519,7 @@
     <MESSAGE value="Below is a complete version of your original dashboard (from [489]) with the following modifications:&#10;&#10;    The View Temperature Graph button is moved so that it appears directly below the current temperature display and is now simply labeled “Graph.”&#10;    The up/down arrows for the timer have been changed to point up (▲) and down (▼) (instead of left/right), and both arrows are placed to the right of the timer value.&#10;    The original layout and functionality (including the 10-key keypad, timer functionality, and light toggle) are preserved." />
     <MESSAGE value="This version only changes the light toggle button's text—from an emoji to a plain text button labeled &quot;Light&quot; (which later updates to &quot;Light On&quot; or &quot;Light Off&quot; based on state) while preserving your original layout." />
     <MESSAGE value="Explanation&#10;&#10;    We added a new global variable LIGHT_PIN = 27.&#10;    In init_gpio(), we now also set up the light pin as an output and initialize it to LOW.&#10;    In the /toggle_light route, after toggling the configuration flag, we import RPi.GPIO (if available) and set LIGHT_PIN to HIGH if the light is on and LOW if off.&#10;    All other functionality remains unchanged." />
-    <option name="LAST_COMMIT_MESSAGE" value="Explanation&#10;&#10;    We added a new global variable LIGHT_PIN = 27.&#10;    In init_gpio(), we now also set up the light pin as an output and initialize it to LOW.&#10;    In the /toggle_light route, after toggling the configuration flag, we import RPi.GPIO (if available) and set LIGHT_PIN to HIGH if the light is on and LOW if off.&#10;    All other functionality remains unchanged." />
+    <MESSAGE value="configured the temperature calibration stuff to work now." />
+    <option name="LAST_COMMIT_MESSAGE" value="configured the temperature calibration stuff to work now." />
   </component>
 </project>
