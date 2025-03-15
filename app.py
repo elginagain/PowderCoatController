@@ -286,6 +286,10 @@ def temperature_graph():
 
 @app.route('/current_temp_history')
 def current_temp_history():
+    """
+    Returns data for the last 2 hours of the current cycle (or most recent cycle).
+    Timestamps are converted via julianday() to handle fractional seconds properly.
+    """
     two_hours_ago = datetime.now() - timedelta(hours=2)
     cycle_id_to_use = current_cycle_id
     if cycle_id_to_use is None:
@@ -301,6 +305,7 @@ def current_temp_history():
         if row:
             cycle_id_to_use = row["id"]
     if cycle_id_to_use is None:
+        # No cycle data, return dummy data
         now = datetime.now()
         dummy = [{
             "x": int(now.timestamp() * 1000),
@@ -311,9 +316,10 @@ def current_temp_history():
         return jsonify(dummy)
     conn = get_db()
     cur = conn.cursor()
-    # Use julianday() to convert timestamp to Unix epoch seconds
     cur.execute("""
-        SELECT CAST((julianday(timestamp) - 2440587.5)*86400 AS INTEGER) AS ts, temperature, set_temperature
+        SELECT CAST((julianday(timestamp) - 2440587.5)*86400 AS INTEGER) AS ts,
+               temperature,
+               set_temperature
         FROM readings
         WHERE cycle_id = ? AND timestamp >= ?
         ORDER BY timestamp ASC
@@ -367,11 +373,16 @@ def show_cycle(cycle_id):
 
 @app.route('/cycles/<int:cycle_id>/data')
 def cycle_data(cycle_id):
+    """
+    Returns historical data for a given cycle.
+    Timestamps converted with julianday() to handle microseconds.
+    """
     conn = get_db()
     cur = conn.cursor()
-    # Use julianday() to convert timestamp to epoch seconds
     cur.execute("""
-        SELECT CAST((julianday(timestamp) - 2440587.5)*86400 AS INTEGER) AS ts, temperature, set_temperature
+        SELECT CAST((julianday(timestamp) - 2440587.5)*86400 AS INTEGER) AS ts,
+               temperature,
+               set_temperature
         FROM readings
         WHERE cycle_id = ?
         ORDER BY timestamp ASC

@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <title>Current Temperature History</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Use a stable version of the plugin -->
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1"></script>
+  <!-- Chart.js 2.9.4 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
+  <!-- chartjs-plugin-zoom 0.7.7 -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
   <style>
     body {
       background-color: #222;
@@ -29,7 +30,7 @@
       padding: 10px;
       border-radius: 8px;
       width: 100%;
-      height: 300px; /* fixed height so axes show */
+      height: 300px;
     }
     .date-label {
       margin-top: 10px;
@@ -62,7 +63,7 @@
     let ctx = document.getElementById('tempChart').getContext('2d');
     let tempChart;
 
-    // Fetch current temp history data from /current_temp_history endpoint
+    // Fetch current temp history data
     fetch('/current_temp_history')
       .then(response => response.json())
       .then(data => {
@@ -73,7 +74,7 @@
 
     function renderChart(data) {
       if (!data || data.length === 0) {
-        console.warn("No data received from /current_temp_history, using dummy data.");
+        console.warn("No data from /current_temp_history, using dummy data.");
         let now = new Date();
         data = [{
           x: now.getTime(),
@@ -81,32 +82,37 @@
           y_set: 0
         }];
       }
+
+      // Prepare dataset for Chart.js
+      let actualData = data.map(d => ({ x: d.x, y: d.y_actual }));
+      let setData = data.map(d => ({ x: d.x, y: d.y_set }));
+
       tempChart = new Chart(ctx, {
         type: 'line',
         data: {
           datasets: [
             {
               label: 'Actual Temp (°F)',
-              data: data.map(d => ({ x: d.x, y: d.y_actual })),
+              data: actualData,
               borderColor: 'rgba(255,99,132,1)',
               backgroundColor: 'rgba(255,99,132,0.2)',
               fill: false,
-              tension: 0.1
+              lineTension: 0.1
             },
             {
               label: 'Set Temp (°F)',
-              data: data.map(d => ({ x: d.x, y: d.y_set })),
+              data: setData,
               borderColor: 'rgba(54,162,235,1)',
               backgroundColor: 'rgba(54,162,235,0.2)',
               fill: false,
-              tension: 0.1
+              lineTension: 0.1
             }
           ]
         },
         options: {
           responsive: true,
           scales: {
-            x: {
+            xAxes: [{
               type: 'time',
               time: {
                 unit: 'minute',
@@ -114,31 +120,33 @@
                   minute: 'HH:mm'
                 }
               },
-              title: {
-                display: true,
-                text: 'Time'
-              },
               ticks: {
-                color: '#fff'
+                fontColor: '#fff'
+              },
+              scaleLabel: {
+                display: true,
+                labelString: 'Time',
+                fontColor: '#fff'
               }
-            },
-            y: {
-              title: {
-                display: true,
-                text: 'Temperature (°F)'
-              },
+            }],
+            yAxes: [{
               ticks: {
-                color: '#fff'
+                fontColor: '#fff'
+              },
+              scaleLabel: {
+                display: true,
+                labelString: 'Temperature (°F)',
+                fontColor: '#fff'
               },
               beginAtZero: false
+            }]
+          },
+          legend: {
+            labels: {
+              fontColor: '#fff'
             }
           },
           plugins: {
-            legend: {
-              labels: {
-                color: '#fff'
-              }
-            },
             zoom: {
               pan: {
                 enabled: true,
