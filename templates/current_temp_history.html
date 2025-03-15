@@ -30,7 +30,7 @@
       padding: 10px;
       border-radius: 8px;
       width: 100%;
-      height: 300px;
+      height: 300px; /* Fixed height so the chart area is visible */
     }
     .date-label {
       margin-top: 10px;
@@ -60,38 +60,29 @@
   </div>
 
   <script>
-    let ctx = document.getElementById('tempChart').getContext('2d');
-    let tempChart;
+    // We'll keep references to our chart and data here
+    let tempChart = null;
+    let ctx = null;
+    const autoRefreshInterval = 10000; // 10 seconds
 
-    fetch('/current_temp_history')
-      .then(response => response.json())
-      .then(data => {
-        console.log("Current Temp History data:", data);
-        renderChart(data);
-      })
-      .catch(err => console.error('Error fetching temp history:', err));
+    // 1) On page load, we create the chart with empty data
+    window.addEventListener('DOMContentLoaded', () => {
+      ctx = document.getElementById('tempChart').getContext('2d');
+      initChart();       // Create the Chart.js chart with empty datasets
+      fetchAndUpdate();  // Fetch data once immediately
+      setInterval(fetchAndUpdate, autoRefreshInterval); // Then auto-refresh every 10s
+      displayDate();     // Show today's date below the chart
+    });
 
-    function renderChart(data) {
-      if (!data || data.length === 0) {
-        console.warn("No data from /current_temp_history, using dummy data.");
-        let now = new Date();
-        data = [{
-          x: now.getTime(),
-          y_actual: 0,
-          y_set: 0
-        }];
-      }
-
-      let actualData = data.map(d => ({ x: d.x, y: d.y_actual }));
-      let setData = data.map(d => ({ x: d.x, y: d.y_set }));
-
+    // 2) Initialize the chart with empty datasets
+    function initChart() {
       tempChart = new Chart(ctx, {
         type: 'line',
         data: {
           datasets: [
             {
               label: 'Actual Temp (°F)',
-              data: actualData,
+              data: [],  // empty initially
               borderColor: 'rgba(255,99,132,1)',
               backgroundColor: 'rgba(255,99,132,0.2)',
               fill: false,
@@ -99,7 +90,7 @@
             },
             {
               label: 'Set Temp (°F)',
-              data: setData,
+              data: [],
               borderColor: 'rgba(54,162,235,1)',
               backgroundColor: 'rgba(54,162,235,0.2)',
               fill: false,
@@ -160,15 +151,50 @@
       });
     }
 
-    // Display today's date
-    let dateEl = document.getElementById('currentDate');
-    let today = new Date();
-    let dateString = today.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-    dateEl.textContent = "Today's Date: " + dateString;
+    // 3) Fetch data from /current_temp_history, update the chart
+    function fetchAndUpdate() {
+      fetch('/current_temp_history')
+        .then(response => response.json())
+        .then(data => {
+          console.log("Refreshed Current Temp History data:", data);
+          updateChartData(data);
+        })
+        .catch(err => console.error('Error fetching temp history:', err));
+    }
+
+    // 4) Update the chart's datasets with new data
+    function updateChartData(data) {
+      if (!data || data.length === 0) {
+        console.warn("No data returned; using dummy data for chart.");
+        let now = new Date();
+        data = [{
+          x: now.getTime(),
+          y_actual: 0,
+          y_set: 0
+        }];
+      }
+
+      // Convert data into separate arrays for actual vs. set
+      let actualData = data.map(d => ({ x: d.x, y: d.y_actual }));
+      let setData = data.map(d => ({ x: d.x, y: d.y_set }));
+
+      // Assign to the existing chart datasets
+      tempChart.data.datasets[0].data = actualData;
+      tempChart.data.datasets[1].data = setData;
+      tempChart.update(); // Redraw
+    }
+
+    // 5) Display today's date below the chart
+    function displayDate() {
+      let dateEl = document.getElementById('currentDate');
+      let today = new Date();
+      let dateString = today.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      dateEl.textContent = "Today's Date: " + dateString;
+    }
   </script>
 </body>
 </html>
