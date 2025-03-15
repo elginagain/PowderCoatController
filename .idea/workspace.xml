@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Summary&#10;&#10;    We removed the ,'localtime' from your SQL queries.&#10;    You’re still storing local timestamps in the DB via datetime.now().&#10;    Chart.js is reading the numeric timestamps (epoch) and displaying them in the browser’s local time.&#10;&#10;If your Pi’s clock/time zone is correct (timedatectl), the lines on the graph should now reflect local time without being offset by ~10 hours. If you still see the wrong time, ensure you’ve replaced all instances of ,'localtime' and restarted Flask. Also confirm your Pi’s time zone matches the actual local time.">
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Summary of Changes&#10;&#10;    In both /current_temp_history and /cycles/&lt;int:cycle_id&gt;/data routes, we now use the SQLite modifier 'utc' in the julianday function so that timestamps stored via datetime.now() (local time) are correctly converted to Unix epoch seconds in UTC.&#10;    The HTML files include Moment.js so that Chart.js 2.9.4 can handle time scales.&#10;    The current temperature graph auto-refreshes every 10 seconds.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/dashboard.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,14 +96,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1740950963541</updated>
-    </task>
-    <task id="LOCAL-00012" summary="Below is a corrected version of your dashboard.html (or the relevant JavaScript section) that uses $.ajax() with contentType: &quot;application/json&quot; so the server knows it’s receiving JSON. Copy/paste this code into your existing dashboard.html, replacing your temperature-setting and keypad-handling logic. This should fix the “Unsupported Media Type” error and allow your /set_temperature endpoint to receive the correct set temperature.">
-      <option name="closed" value="true" />
-      <created>1741396681884</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1741396681884</updated>
     </task>
     <task id="LOCAL-00013" summary="Below is a corrected version of your dashboard.html (or the relevant JavaScript section) that uses $.ajax() with contentType: &quot;application/json&quot; so the server knows it’s receiving JSON. Copy/paste this code into your existing dashboard.html, replacing your temperature-setting and keypad-handling logic. This should fix the “Unsupported Media Type” error and allow your /set_temperature endpoint to receive the correct set temperature.">
       <option name="closed" value="true" />
@@ -488,11 +481,18 @@
       <option name="project" value="LOCAL" />
       <updated>1742061567629</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="Summary of Changes&#10;&#10;    In both /current_temp_history and /cycles/&lt;int:cycle_id&gt;/data routes, we now use the SQLite modifier 'utc' in the julianday function so that timestamps stored via datetime.now() (local time) are correctly converted to Unix epoch seconds in UTC.&#10;    The HTML files include Moment.js so that Chart.js 2.9.4 can handle time scales.&#10;    The current temperature graph auto-refreshes every 10 seconds.">
+      <option name="closed" value="true" />
+      <created>1742061955657</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1742061955657</updated>
+    </task>
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Below is the complete updated app.py that uses pigpio in its normal mode (without “soft”) so that it connects to the pigpiod daemon running on localhost." />
     <MESSAGE value="created run_app.py" />
     <MESSAGE value="created run_app.sh" />
     <MESSAGE value="pi = pigpio.pi(&quot;soft&quot;, 8888)" />
@@ -517,6 +517,7 @@
     <MESSAGE value="Key Changes:&#10;&#10;    We have an interval that calls fetchAndUpdate() every 10 seconds, so the chart automatically refreshes.&#10;    We initialize the chart once (with empty data) in initChart(), then in fetchAndUpdate() we fetch data from /current_temp_history and call updateChartData(data) to update the existing chart without re-creating it.&#10;    This ensures you see new points every 10 seconds." />
     <MESSAGE value=" The only changes relate to how the timestamp (ts) is computed in the SQL queries—now using SQLite’s 'localtime' modifier so that the epoch is computed from the stored timestamp as local time. This should cause Chart.js to display times that match your Pi’s local clock." />
     <MESSAGE value="Summary&#10;&#10;    We removed the ,'localtime' from your SQL queries.&#10;    You’re still storing local timestamps in the DB via datetime.now().&#10;    Chart.js is reading the numeric timestamps (epoch) and displaying them in the browser’s local time.&#10;&#10;If your Pi’s clock/time zone is correct (timedatectl), the lines on the graph should now reflect local time without being offset by ~10 hours. If you still see the wrong time, ensure you’ve replaced all instances of ,'localtime' and restarted Flask. Also confirm your Pi’s time zone matches the actual local time." />
-    <option name="LAST_COMMIT_MESSAGE" value="Summary&#10;&#10;    We removed the ,'localtime' from your SQL queries.&#10;    You’re still storing local timestamps in the DB via datetime.now().&#10;    Chart.js is reading the numeric timestamps (epoch) and displaying them in the browser’s local time.&#10;&#10;If your Pi’s clock/time zone is correct (timedatectl), the lines on the graph should now reflect local time without being offset by ~10 hours. If you still see the wrong time, ensure you’ve replaced all instances of ,'localtime' and restarted Flask. Also confirm your Pi’s time zone matches the actual local time." />
+    <MESSAGE value="Summary of Changes&#10;&#10;    In both /current_temp_history and /cycles/&lt;int:cycle_id&gt;/data routes, we now use the SQLite modifier 'utc' in the julianday function so that timestamps stored via datetime.now() (local time) are correctly converted to Unix epoch seconds in UTC.&#10;    The HTML files include Moment.js so that Chart.js 2.9.4 can handle time scales.&#10;    The current temperature graph auto-refreshes every 10 seconds." />
+    <option name="LAST_COMMIT_MESSAGE" value="Summary of Changes&#10;&#10;    In both /current_temp_history and /cycles/&lt;int:cycle_id&gt;/data routes, we now use the SQLite modifier 'utc' in the julianday function so that timestamps stored via datetime.now() (local time) are correctly converted to Unix epoch seconds in UTC.&#10;    The HTML files include Moment.js so that Chart.js 2.9.4 can handle time scales.&#10;    The current temperature graph auto-refreshes every 10 seconds." />
   </component>
 </project>
