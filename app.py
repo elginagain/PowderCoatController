@@ -19,7 +19,13 @@ CONFIG_FILE = "config.json"
 def load_config():
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, "r") as f:
-            return json.load(f)
+            config = json.load(f)
+            # Ensure calibration keys exist
+            if "calibration_offset" not in config:
+                config["calibration_offset"] = 0.0
+            if "calibration_scale" not in config:
+                config["calibration_scale"] = 1.0
+            return config
     return {
         "temp_offset": 0.0,
         "pid_tunings": [10, 5, 1],
@@ -27,7 +33,9 @@ def load_config():
         "oven_on": False,
         "light_on": False,
         "timer_running": False,
-        "time_remaining": 0
+        "time_remaining": 0,
+        "calibration_offset": 0.0,
+        "calibration_scale": 1.0
     }
 
 
@@ -41,7 +49,7 @@ config = load_config()
 # Initialize the database at startup.
 init_db()
 
-# Global variable for PWM and SSR pin
+# Global variable for PWM and SSR pin, and light control pin
 pwm = None
 SSR_PIN = 17  # GPIO pin for SSR control
 LIGHT_PIN = 27  # GPIO pin for light control
@@ -60,16 +68,26 @@ def init_gpio():
             # Setup SSR control pin
             GPIO.setup(SSR_PIN, GPIO.OUT)
             pwm = GPIO.PWM(SSR_PIN, 100)
-            pwm.start(0)  # Start with 0% duty cycle (heater off)
+            pwm.start(0)  # 0% duty cycle (heater off)
             # Setup Light control pin
             GPIO.setup(LIGHT_PIN, GPIO.OUT)
-            GPIO.output(LIGHT_PIN, GPIO.LOW)  # Start with light off
+            GPIO.output(LIGHT_PIN, GPIO.LOW)  # Light off by default
             print("GPIO initialized successfully.")
         except Exception as e:
             print("Error setting up GPIO:", e)
             pwm = None
     else:
         pwm = None
+
+
+# -------------------------
+# Calibration Helper Function
+# -------------------------
+def get_calibrated_temperature():
+    raw = read_temperature()
+    offset = config.get("calibration_offset", 0.0)
+    scale = config.get("calibration_scale", 1.0)
+    return (raw - offset) / scale
 
 
 # -------------------------
@@ -124,13 +142,13 @@ def purge_old_cycles():
 
 
 # -------------------------
-# Background Temperature Logger
+# Background Temperature Logger (stores calibrated values)
 # -------------------------
 def temperature_logger():
     global current_cycle_id
     while True:
-        current_temp = read_temperature()
-        print(f"[Logger] current_temp={current_temp}, oven_on={config['oven_on']}, cycle_id={current_cycle_id}")
+        current_temp = get_calibrated_temperature()
+        print(f"[Logger] calibrated_temp={current_temp}, oven_on={config['oven_on']}, cycle_id={current_cycle_id}")
         if config["oven_on"] and current_cycle_id is not None:
             conn = get_db()
             cur = conn.cursor()
@@ -140,7 +158,7 @@ def temperature_logger():
             """, (current_cycle_id, datetime.now(), current_temp, config["target_temperature"]))
             conn.commit()
             conn.close()
-            print("[Logger] Inserted reading into DB.")
+            print("[Logger] Inserted calibrated reading into DB.")
         else:
             print("[Logger] Not logging because oven_off or no active cycle.")
         time.sleep(5)
@@ -179,7 +197,7 @@ timer_thread_instance = threading.Thread(target=timer_thread, daemon=True)
 timer_thread_instance.start()
 
 # -------------------------
-# PID Control for SSR Output (using RPi.GPIO)
+# PID Control for SSR Output (using calibrated temperature)
 # -------------------------
 Kp = 1.0
 Ki = 0.1
@@ -192,9 +210,9 @@ pid_thread = None
 def pid_control_loop():
     global integral, last_error
     last_time = time.time()
-    max_integral = 500  # Anti-windup limit
+    max_integral = 500
     while config["oven_on"]:
-        current_temp = read_temperature()
+        current_temp = get_calibrated_temperature()
         setpoint = config["target_temperature"]
         error = setpoint - current_temp
         current_time = time.time()
@@ -205,7 +223,8 @@ def pid_control_loop():
         derivative = (error - last_error) / dt
         output = Kp * error + Ki * integral + Kd * derivative
         duty_cycle = max(0, min(100, output))
-        print(f"PID: setpoint={setpoint}, current={current_temp:.2f}, error={error:.2f}, duty={duty_cycle:.2f}")
+        print(
+            f"PID: setpoint={setpoint}, calibrated_current={current_temp:.2f}, error={error:.2f}, duty={duty_cycle:.2f}")
         if pwm is not None:
             print(f"Calling pwm.ChangeDutyCycle({duty_cycle})")
             pwm.ChangeDutyCycle(duty_cycle)
@@ -218,7 +237,50 @@ def pid_control_loop():
 
 
 # -------------------------
-# Routes
+# Calibration Routes
+# -------------------------
+@app.route('/calibrate_temperature', methods=['GET'])
+def calibrate_temperature_page():
+    # You need to create a corresponding 'calibrate.html' template with instructions.
+    return render_template('calibrate.html')
+
+
+@app.route('/calibrate_temperature/ice', methods=['POST'])
+def calibrate_ice():
+    # Take a raw reading (without calibration correction)
+    raw_ice = read_temperature()
+    config["calibration_ice"] = raw_ice
+    save_config(config)
+    print(f"Calibrated ice value: {raw_ice}")
+    return jsonify({"ice": raw_ice})
+
+
+@app.route('/calibrate_temperature/boiling', methods=['POST'])
+def calibrate_boiling():
+    raw_boiling = read_temperature()
+    config["calibration_boiling"] = raw_boiling
+    expected_ice = 32.0
+    expected_boiling = 212.0
+    if "calibration_ice" not in config:
+        return jsonify({"error": "Ice calibration value not set."}), 400
+    raw_ice = config["calibration_ice"]
+    try:
+        scale = (raw_boiling - raw_ice) / (expected_boiling - expected_ice)
+    except ZeroDivisionError:
+        scale = 1.0
+    offset = raw_ice - scale * expected_ice
+    config["calibration_scale"] = scale
+    config["calibration_offset"] = offset
+    # Remove temporary calibration values
+    config.pop("calibration_ice", None)
+    config.pop("calibration_boiling", None)
+    save_config(config)
+    print(f"Calibration complete: scale={scale}, offset={offset}")
+    return jsonify({"scale": scale, "offset": offset, "message": "Calibration complete."})
+
+
+# -------------------------
+# Other Routes
 # -------------------------
 @app.route('/')
 def dashboard():
@@ -232,10 +294,8 @@ def settings():
 
 @app.route('/toggle_light', methods=['POST'])
 def toggle_light():
-    # Toggle the configuration flag
     config["light_on"] = not config.get("light_on", False)
     save_config(config)
-    # Control the physical light output using LIGHT_PIN
     try:
         import RPi.GPIO as GPIO
         if config["light_on"]:
@@ -316,7 +376,7 @@ def get_temperature_endpoint():
 
 @app.route('/current_temperature', methods=['GET'])
 def current_temperature():
-    temp = read_temperature()
+    temp = get_calibrated_temperature()
     return jsonify({"current_temperature": temp})
 
 
@@ -334,7 +394,7 @@ def current_temp_history():
         now = datetime.now()
         dummy = [{
             "x": int(now.timestamp() * 1000),
-            "y_actual": read_temperature(),
+            "y_actual": get_calibrated_temperature(),
             "y_set": config["target_temperature"]
         }]
         print("No active cycle; returning dummy data.")
@@ -357,7 +417,7 @@ def current_temp_history():
         now = datetime.now()
         dummy = [{
             "x": int(now.timestamp() * 1000),
-            "y_actual": read_temperature(),
+            "y_actual": get_calibrated_temperature(),
             "y_set": config["target_temperature"]
         }]
         print("No readings found for current cycle; returning dummy data.")

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Set viewport to simulate 800x480 -->
+  <meta name="viewport" content="width=800, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Temperature Calibration</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      background-color: #121212;
+      color: #eee;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .instruction {
+      font-size: 18px;
+      margin: 20px 0;
+    }
+    .button {
+      font-size: 18px;
+      padding: 10px 20px;
+      background: #444;
+      border: 1px solid #fff;
+      color: #eee;
+      border-radius: 3px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    .button:hover {
+      background: #555;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Temperature Calibration</h1>
+    <div id="step1" class="instruction">
+      Step 1: Place the probe in an ice bath. When the temperature stabilizes, click the "Calibrate Ice" button.
+    </div>
+    <button id="calibrateIce" class="button">Calibrate Ice</button>
+
+    <div id="step2" class="instruction" style="display:none;">
+      Step 2: Now place the probe in boiling water. When the temperature stabilizes, click the "Calibrate Boiling" button.
+    </div>
+    <button id="calibrateBoiling" class="button" style="display:none;">Calibrate Boiling</button>
+
+    <div id="status"></div>
+    <div style="margin-top:20px;">
+      <button class="button" onclick="location.href='/settings'">Return to Settings</button>
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function(){
+      $("#calibrateIce").click(function(){
+        $("#status").text("Calibrating in ice bath... Please wait.");
+        $.ajax({
+          url: "/calibrate_temperature/ice",
+          method: "POST",
+          success: function(response) {
+            $("#status").text("Ice calibration complete. Raw ice value: " + response.ice);
+            $("#calibrateIce").hide();
+            $("#step1").hide();
+            $("#step2").show();
+            $("#calibrateBoiling").show();
+          },
+          error: function(xhr, status, error) {
+            $("#status").text("Error during ice calibration: " + error);
+          }
+        });
+      });
+
+      $("#calibrateBoiling").click(function(){
+        $("#status").text("Calibrating in boiling water... Please wait.");
+        $.ajax({
+          url: "/calibrate_temperature/boiling",
+          method: "POST",
+          success: function(response) {
+            $("#status").text("Calibration complete. Scale: " + response.scale.toFixed(2) + ", Offset: " + response.offset.toFixed(2));
+            $("#calibrateBoiling").hide();
+            $("#step2").hide();
+          },
+          error: function(xhr, status, error) {
+            $("#status").text("Error during boiling calibration: " + error);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
