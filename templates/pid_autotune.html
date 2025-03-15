@@ -25,21 +25,42 @@
     .button:hover {
       background: #555;
     }
+    #progress {
+      margin-top: 20px;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
   <h1>PID Auto-Tune</h1>
-  <p>Click the button below to run the PID auto-tuning process.<br>
-  This will adjust the PID parameters automatically.</p>
+  <p>Click the button below to run the PID auto-tuning process. This will run a relay feedback test for about 60 seconds and compute the tuned PID parameters.</p>
   <button class="button" id="autoTuneBtn">Run Auto-Tune</button>
+  <div id="progress"></div>
   <div id="result"></div>
   <p><a href="/settings" style="color:#eee;">Back to Settings</a></p>
+
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     $("#autoTuneBtn").click(function(){
+      // Display a progress message and start a countdown (60 seconds)
+      let remaining = 60;
+      $("#progress").html("<p>Auto-tuning in progress... " + remaining + " seconds remaining.</p>");
+      let progressInterval = setInterval(function(){
+         remaining--;
+         $("#progress").html("<p>Auto-tuning in progress... " + remaining + " seconds remaining.</p>");
+         if(remaining <= 0) {
+            clearInterval(progressInterval);
+         }
+      }, 1000);
+
+      // Start the auto-tune process on the server via POST.
       $.post("/pid_autotune", function(response){
+         clearInterval(progressInterval);
+         $("#progress").empty();
          $("#result").html("<p>" + response.message + "</p><p>Kp: " + response.tuned.Kp.toFixed(2) + ", Ki: " + response.tuned.Ki.toFixed(2) + ", Kd: " + response.tuned.Kd.toFixed(2) + "</p>");
       }).fail(function(){
+         clearInterval(progressInterval);
+         $("#progress").empty();
          $("#result").html("<p>Error running PID auto-tune.</p>");
       });
     });
