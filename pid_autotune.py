@@ -1,107 +1,86 @@
-# pid_autotune.py
-
 import time
 import math
-from datetime import datetime
-from temperature_sensor import read_temperature  # Use your sensor reading function
+from temperature_sensor import read_temperature
 
 
-def auto_tune_pid(config, pwm, SSR_PIN):
+def auto_tune_pid():
     """
-    Run a relay-based auto-tune experiment.
+    Performs a relay-feedback based auto-tuning algorithm over 10 minutes.
 
-    Parameters:
-      config: the global configuration dictionary (must contain "target_temperature")
-      pwm: the PWM instance controlling the heater (SSR_PIN)
-      SSR_PIN: the GPIO pin number for the heater control
+    The algorithm toggles the heater output (relay mode) for 10 minutes while recording
+    temperature readings every second. The relay is ON for 60 seconds and OFF for 60 seconds.
 
-    Returns a dictionary with tuned PID parameters: {"Kp": ..., "Ki": ..., "Kd": ...}
+    After the test period, the algorithm detects peaks and troughs to estimate the oscillation period (Pu)
+    and amplitude (A). Then, using a relay half-swing (h=50, assuming a 0-100% output swing),
+    it computes the ultimate gain Ku and uses Ziegler–Nichols rules:
 
-    This function assumes that the heater is controlled by switching the PWM fully ON (100%)
-    and OFF (0%), and that the process variable (temperature) oscillates.
+        Kp = 0.6 * Ku
+        Ki = 1.2 * Ku / Pu
+        Kd = 0.075 * Ku * Pu
+
+    Returns:
+        dict: Tuned PID parameters (Kp, Ki, Kd)
     """
-    # Relay auto-tune parameters
-    setpoint = config.get("target_temperature", 350)
-    hysteresis = 2.0  # degrees F
-    relay_amplitude = 50.0  # d (if output swings from 0 to 100, d = 50)
-    test_duration = 120  # seconds for the auto-tune experiment
+    tuning_duration = 600  # seconds (10 minutes)
+    relay_on_time = 60  # seconds heater is ON
+    relay_off_time = 60  # seconds heater is OFF
+    sample_interval = 1  # seconds between samples
 
-    # Lists to store switching times and temperatures
-    switching_times = []
-    measured_temps = []
-
-    # Determine initial state based on current calibrated temperature
-    current_temp = read_temperature()
-    if current_temp < setpoint:
-        current_state = 'on'
-        pwm.ChangeDutyCycle(100)
-    else:
-        current_state = 'off'
-        pwm.ChangeDutyCycle(0)
-
+    readings = []  # List to store (time, temperature) readings
     start_time = time.time()
-    print("Starting auto-tune relay experiment for {} seconds...".format(test_duration))
+    current_time = start_time
+    relay_state = True  # Start with heater ON
+    next_toggle = current_time + relay_on_time
 
-    # Run the relay experiment
-    while time.time() - start_time < test_duration:
-        current_temp = read_temperature()
-        now = time.time()
-        # If heater is ON and temp rises above setpoint + hysteresis, switch OFF
-        if current_state == 'on' and current_temp > setpoint + hysteresis:
-            pwm.ChangeDutyCycle(0)
-            current_state = 'off'
-            switching_times.append(now)
-            measured_temps.append(current_temp)
-            print("Switching OFF at temp {:.2f} at time {:.2f}".format(current_temp, now))
-        # If heater is OFF and temp falls below setpoint - hysteresis, switch ON
-        elif current_state == 'off' and current_temp < setpoint - hysteresis:
-            pwm.ChangeDutyCycle(100)
-            current_state = 'on'
-            switching_times.append(now)
-            measured_temps.append(current_temp)
-            print("Switching ON at temp {:.2f} at time {:.2f}".format(current_temp, now))
-        time.sleep(0.5)
+    print("Starting PID auto-tuning relay test for 10 minutes...")
+    while current_time - start_time < tuning_duration:
+        t = time.time() - start_time  # relative time in seconds
+        temp = read_temperature()  # raw sensor reading
+        readings.append((t, temp))
 
-    # End the relay test by turning off heater (PID will resume later)
-    pwm.ChangeDutyCycle(0)
-    print("Auto-tune experiment complete. Processing data...")
+        if time.time() >= next_toggle:
+            relay_state = not relay_state
+            # In an actual system, you would toggle the heater output here.
+            print(f"Relay toggled to {'ON' if relay_state else 'OFF'} at t={time.time() - start_time:.1f}s")
+            next_toggle = time.time() + (relay_on_time if relay_state else relay_off_time)
+        time.sleep(sample_interval)
+        current_time = time.time()
 
-    # Need at least two switching events to compute period
-    if len(switching_times) < 2:
-        print("Not enough switching events for auto-tuning. Returning default parameters.")
-        return {"Kp": 1.0, "Ki": 0.1, "Kd": 0.05}
+    # Detect peaks and troughs in the readings
+    peaks = []
+    troughs = []
+    for i in range(1, len(readings) - 1):
+        prev_temp = readings[i - 1][1]
+        curr_temp = readings[i][1]
+        next_temp = readings[i + 1][1]
+        if curr_temp > prev_temp and curr_temp > next_temp:
+            peaks.append((readings[i][0], curr_temp))
+        if curr_temp < prev_temp and curr_temp < next_temp:
+            troughs.append((readings[i][0], curr_temp))
 
-    # Compute periods (assume every two switches represent one full cycle)
-    periods = []
-    for i in range(2, len(switching_times), 2):
-        period = switching_times[i] - switching_times[i - 2]
-        periods.append(period)
-    if not periods:
-        print("Unable to compute oscillation period. Returning default parameters.")
-        return {"Kp": 1.0, "Ki": 0.1, "Kd": 0.05}
-    Tu = sum(periods) / len(periods)
-    print("Computed oscillation period (Tu): {:.2f} seconds".format(Tu))
+    if len(peaks) < 2 or len(troughs) < 2:
+        print("Not enough oscillation detected for auto-tuning.")
+        return {"Kp": 1.0, "Ki": 0.0, "Kd": 0.0}
 
-    # Compute amplitude as half the difference between max and min measured temperatures
-    max_temp = max(measured_temps)
-    min_temp = min(measured_temps)
-    A = (max_temp - min_temp) / 2.0
-    print("Measured temperature amplitude (A): {:.2f}".format(A))
+    # Compute average period Pu from peak-to-peak differences
+    peak_periods = [peaks[i][0] - peaks[i - 1][0] for i in range(1, len(peaks))]
+    Pu = sum(peak_periods) / len(peak_periods)
 
-    if A == 0:
-        print("Zero amplitude detected. Returning default PID parameters.")
-        return {"Kp": 1.0, "Ki": 0.1, "Kd": 0.05}
+    # Compute average amplitude A from peaks and troughs (pairwise)
+    amplitudes = []
+    for i in range(min(len(peaks), len(troughs))):
+        amplitudes.append(peaks[i][1] - troughs[i][1])
+    A = sum(amplitudes) / len(amplitudes)
 
-    # Compute ultimate gain using relay method
-    Ku = (4 * relay_amplitude) / (math.pi * A)
-    print("Calculated ultimate gain (Ku): {:.2f}".format(Ku))
+    # h is half the output swing; assuming a 0-100% output, h = 50.
+    h = 50.0
+    Ku = (4 * h) / (math.pi * A)
 
-    # Ziegler-Nichols tuning formulas:
     Kp = 0.6 * Ku
-    Ti = 0.5 * Tu  # Integral time
-    Ki = Kp / Ti if Ti != 0 else 0.0
-    Td = 0.125 * Tu  # Derivative time
-    Kd = Kp * Td
-    print("Tuned PID parameters: Kp = {:.2f}, Ki = {:.2f}, Kd = {:.2f}".format(Kp, Ki, Kd))
+    Ki = 1.2 * Ku / Pu
+    Kd = 0.075 * Ku * Pu
+
+    print(f"Auto-tuning complete. Ku={Ku:.2f}, Pu={Pu:.2f}")
+    print(f"Tuned parameters: Kp={Kp:.2f}, Ki={Ki:.2f}, Kd={Kd:.2f}")
 
     return {"Kp": Kp, "Ki": Ki, "Kd": Kd}

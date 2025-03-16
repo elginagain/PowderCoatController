@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="Summary&#10;&#10;    pid_autotune.py now contains a relay-feedback auto-tuning algorithm that overrides the heater output for a fixed test duration, measures oscillations, and computes PID gains using Ziegler–Nichols rules.&#10;    app.py has been updated to include a /pid_autotune route that supports both GET (to show the tuning interface) and POST (to run auto-tuning). When auto-tuning is run, the tuned PID parameters are stored in the global dictionary pid_params and also saved in the configuration.&#10;    pid_autotune.html is the template for the PID auto-tune page.">
+    <list default="true" id="42e9cee9-cf8e-4a37-984c-80c486563aed" name="Changes" comment="updated version of your pid_autotune.html file. In this version, when you click the &quot;Run Auto-Tune&quot; button, a progress message appears and counts down from 60 seconds (the expected tuning duration). When the auto‐tuning routine finishes, the tuned PID parameters and a completion message are displayed.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pid_autotune.py" beforeDir="false" afterPath="$PROJECT_DIR$/pid_autotune.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/pid_autotune.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/pid_autotune.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -95,14 +98,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1740950963541</updated>
-    </task>
-    <task id="LOCAL-00020" summary="added a test script to test the PWM output and figure out why the LED on pin 17 isn't lighting up to indicate the SSR is being triggered when the oven is on and below set point.">
-      <option name="closed" value="true" />
-      <created>1741407492721</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1741407492721</updated>
     </task>
     <task id="LOCAL-00021" summary="Inverted duty cycle on app.py to see if that fixes the pid output on pin 17 so it lights the test led on the hat.">
       <option name="closed" value="true" />
@@ -488,11 +483,18 @@
       <option name="project" value="LOCAL" />
       <updated>1742082058261</updated>
     </task>
-    <option name="localTasksCounter" value="69" />
+    <task id="LOCAL-00069" summary="updated version of your pid_autotune.html file. In this version, when you click the &quot;Run Auto-Tune&quot; button, a progress message appears and counts down from 60 seconds (the expected tuning duration). When the auto‐tuning routine finishes, the tuned PID parameters and a completion message are displayed.">
+      <option name="closed" value="true" />
+      <created>1742082644154</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1742082644154</updated>
+    </task>
+    <option name="localTasksCounter" value="70" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="if __name__ == '__main__':&#10;    init_gpio()  # Initialize GPIO now (after all imports)&#10;    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)&#10;&#10;disabled reloader." />
     <MESSAGE value="Adjusting pid control loop to make it shut off pin 17 faster when the temp exceeds the set point." />
     <MESSAGE value="init gpio error fixed." />
     <MESSAGE value="Updated dashboard to make everything fit without scrolling." />
@@ -517,6 +519,7 @@
     <MESSAGE value="Explanation&#10;&#10;    We added a new global variable LIGHT_PIN = 27.&#10;    In init_gpio(), we now also set up the light pin as an output and initialize it to LOW.&#10;    In the /toggle_light route, after toggling the configuration flag, we import RPi.GPIO (if available) and set LIGHT_PIN to HIGH if the light is on and LOW if off.&#10;    All other functionality remains unchanged." />
     <MESSAGE value="configured the temperature calibration stuff to work now." />
     <MESSAGE value="Summary&#10;&#10;    pid_autotune.py now contains a relay-feedback auto-tuning algorithm that overrides the heater output for a fixed test duration, measures oscillations, and computes PID gains using Ziegler–Nichols rules.&#10;    app.py has been updated to include a /pid_autotune route that supports both GET (to show the tuning interface) and POST (to run auto-tuning). When auto-tuning is run, the tuned PID parameters are stored in the global dictionary pid_params and also saved in the configuration.&#10;    pid_autotune.html is the template for the PID auto-tune page." />
-    <option name="LAST_COMMIT_MESSAGE" value="Summary&#10;&#10;    pid_autotune.py now contains a relay-feedback auto-tuning algorithm that overrides the heater output for a fixed test duration, measures oscillations, and computes PID gains using Ziegler–Nichols rules.&#10;    app.py has been updated to include a /pid_autotune route that supports both GET (to show the tuning interface) and POST (to run auto-tuning). When auto-tuning is run, the tuned PID parameters are stored in the global dictionary pid_params and also saved in the configuration.&#10;    pid_autotune.html is the template for the PID auto-tune page." />
+    <MESSAGE value="updated version of your pid_autotune.html file. In this version, when you click the &quot;Run Auto-Tune&quot; button, a progress message appears and counts down from 60 seconds (the expected tuning duration). When the auto‐tuning routine finishes, the tuned PID parameters and a completion message are displayed." />
+    <option name="LAST_COMMIT_MESSAGE" value="updated version of your pid_autotune.html file. In this version, when you click the &quot;Run Auto-Tune&quot; button, a progress message appears and counts down from 60 seconds (the expected tuning duration). When the auto‐tuning routine finishes, the tuned PID parameters and a completion message are displayed." />
   </component>
 </project>
